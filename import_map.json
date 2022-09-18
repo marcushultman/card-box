@@ -1,11 +1,17 @@
 {
   "imports": {
+    "automerge": "https://esm.sh/automerge@1.0.1-preview.7",
+    "firebase/app": "https://www.gstatic.com/firebasejs/9.9.1/firebase-app.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/9.9.1/firebase-firestore.js",
+    "@firestore": "./utils/firestore.ts",
     "$fresh/": "https://deno.land/x/fresh@1.0.1/",
     "preact": "https://esm.sh/preact@10.8.2",
     "preact/": "https://esm.sh/preact@10.8.2/",
     "preact-render-to-string": "https://esm.sh/preact-render-to-string@5.2.0?deps=preact@10.8.2",
     "@twind": "./utils/twind.ts",
     "twind": "https://esm.sh/twind@0.16.17",
-    "twind/": "https://esm.sh/twind@0.16.17/"
+    "twind/": "https://esm.sh/twind@0.16.17/",
+    "twind/content": "https://esm.sh/@twind/content@0.1.0",
+    "rxjs": "https://esm.sh/rxjs"
   }
 }

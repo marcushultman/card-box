@@ -2,19 +2,29 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $0 from "./routes/[name].tsx";
-import * as $1 from "./routes/api/joke.ts";
-import * as $2 from "./routes/index.tsx";
-import * as $$0 from "./islands/Counter.tsx";
+import * as $0 from './routes/api/joke.ts';
+import * as $1 from './routes/game/[id]/admin.tsx';
+import * as $2 from './routes/index.tsx';
+import * as $$0 from './islands/Chat.tsx';
+import * as $$1 from './islands/Counter.tsx';
+import * as $$2 from './islands/NewGameForm.tsx';
+import * as $$3 from './islands/OfflineMode.tsx';
+import * as $$4 from './islands/ResetGame.tsx';
+import * as $$5 from './islands/SurfaceView.tsx';
 
 const manifest = {
   routes: {
-    "./routes/[name].tsx": $0,
-    "./routes/api/joke.ts": $1,
-    "./routes/index.tsx": $2,
+    './routes/api/joke.ts': $0,
+    './routes/game/[id]/admin.tsx': $1,
+    './routes/index.tsx': $2,
   },
   islands: {
-    "./islands/Counter.tsx": $$0,
+    './islands/Chat.tsx': $$0,
+    './islands/Counter.tsx': $$1,
+    './islands/NewGameForm.tsx': $$2,
+    './islands/OfflineMode.tsx': $$3,
+    './islands/ResetGame.tsx': $$4,
+    './islands/SurfaceView.tsx': $$5,
   },
   baseUrl: import.meta.url,
 };
