@@ -1,6 +1,3 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
 import { useEffect, useState } from 'preact/hooks';
 import { SurfaceType } from '../utils/rules.ts';
 import {
@@ -122,7 +119,7 @@ export default function SurfaceView(
       case SurfaceType.SHOW_ALL:
         return surface.items.map((item) => renderItem(item));
       case SurfaceType.SHOW_NUM:
-        return <div class={tw`font-bold`}>{surface.items.length}</div>;
+        return <div class='font-bold'>{surface.items.length}</div>;
       case SurfaceType.SHOW_TOP:
         return surface.items.slice(-1).map((item) => renderItem(item));
     }
@@ -139,17 +136,17 @@ export default function SurfaceView(
 
   return (
     <div
-      class={tw`m-2 border(2 slate-400) text-center flex(& col)`}
+      class='m-2 border(2 slate-400) text-center flex(& col)'
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <h3 class={tw`font-bold`}>
+      <h3 class='font-bold'>
         {surface.repeated?.value} {surface.class}
         {surface.type === SurfaceType.SHOW_TOP ? ` (${surface.items.length})` : ''}
       </h3>
       {Array.isArray(items) && !items.length
-        ? <div class={tw`italic`}>Empty</div>
-        : <div class={tw`flex-1 justify-evenly flex(& wrap)`}>{items}</div>}
+        ? <div class='italic'>Empty</div>
+        : <div class='flex-1 justify-evenly flex(& wrap)'>{items}</div>}
     </div>
   );
 }

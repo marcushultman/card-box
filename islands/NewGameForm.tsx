@@ -1,6 +1,3 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
 import { createGame } from '../utils/game_engine.ts';
 
 export default function NewGameForm() {
@@ -10,12 +7,12 @@ export default function NewGameForm() {
   };
 
   return (
-    <form class={tw`flex flex-col p-2 items-center space-y-2`} onSubmit={onSubmit}>
+    <form class='flex flex-col p-2 items-center space-y-2' onSubmit={onSubmit}>
       <h2>New game</h2>
-      <select class={tw`self-stretch`}>
+      <select class='self-stretch'>
         <option>Love letter</option>
       </select>
-      <input class={tw`py-2 px-6 bg-blue-400 rounded-full`} type='submit' value='Create Game' />
+      <input class='py-2 px-6 bg-blue-400 rounded-full' type='submit' value='Create Game' />
     </form>
   );
 }

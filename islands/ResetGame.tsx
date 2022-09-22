@@ -1,6 +1,3 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
 import useGame from '../utils/use_game.ts';
 import { clearCache } from '../utils/game_engine.ts';
 

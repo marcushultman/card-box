@@ -1,9 +1,8 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
+import { JSX } from 'preact';
+import { tw } from 'twind';
 import { Metadata } from '../utils/rules.ts';
 
-interface Props extends h.JSX.HTMLAttributes<HTMLElement> {
+interface Props extends JSX.HTMLAttributes<HTMLElement> {
   invisible: boolean;
   metadata?: Metadata;
 }

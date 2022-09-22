@@ -1,6 +1,3 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
 import Counter from '../islands/Counter.tsx';
 import NewGameForm from '../islands/NewGameForm.tsx';
 import { Handlers, PageProps } from '$fresh/server.ts';
@@ -22,13 +19,13 @@ export const handler: Handlers<Data, State> = {
 
 export default function Home({ data: { gameDocs, username } }: PageProps<Data>) {
   return (
-    <div class={tw`p-4 mx-auto max-w-screen-md h-screen relative`}>
+    <div class='p-4 mx-auto max-w-screen-md h-screen relative'>
       <img
         src='/logo.svg'
         height='100px'
         alt='the fresh logo: a sliced lemon dripping with juice'
       />
-      <p class={tw`my-6`}>
+      <p class='my-6'>
         Hi{' '}
         {username}, Welcome to `fresh`. Try update this message in the ./routes/index.tsx file, and
         refresh.

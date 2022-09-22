@@ -1,6 +1,3 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
 import { Handlers } from '$fresh/server.ts';
 import { setCookie } from 'https://deno.land/std@0.121.0/http/cookie.ts';
 import { create } from 'https://deno.land/x/djwt@v2.7/mod.ts';
@@ -37,8 +34,8 @@ export const handler: Handlers = {
 
 export default function login() {
   return (
-    <form class={tw`p-4 mx-auto max-w-screen-md h-screen relative flex(& col)`} method='post'>
-      <p class={tw`my-6 text-center`}>
+    <form class='p-4 mx-auto max-w-screen-md h-screen relative flex(& col)' method='post'>
+      <p class='my-6 text-center'>
         [Card-Box]
       </p>
       <label for='username'>Username:</label>
@@ -46,12 +43,12 @@ export default function login() {
         type='text'
         id='username'
         name='username'
-        class={tw`p-1 mb-6 rounded bg-gray-100`}
+        class='p-1 mb-6 rounded bg-gray-100'
         autoComplete='off'
       />
       <label for='pwd'>Password:</label>
-      <input type='password' id='pwd' name='pwd' class={tw`p-1 mb-6 rounded bg-gray-100`} />
-      <input type='submit' value='Login' class={tw`px-4 py-2 mx-auto rounded-lg bg-green-200`} />
+      <input type='password' id='pwd' name='pwd' class='p-1 mb-6 rounded bg-gray-100' />
+      <input type='submit' value='Login' class='px-4 py-2 mx-auto rounded-lg bg-green-200' />
     </form>
   );
 }

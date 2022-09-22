@@ -8,5 +8,9 @@
       "singleQuote": true,
       "lineWidth": 100
     }
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
   }
 }

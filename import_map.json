@@ -4,14 +4,15 @@
     "firebase/app": "https://www.gstatic.com/firebasejs/9.9.1/firebase-app.js",
     "firebase/firestore": "https://www.gstatic.com/firebasejs/9.9.1/firebase-firestore.js",
     "@firestore": "./utils/firestore.ts",
-    "$fresh/": "https://deno.land/x/fresh@1.0.1/",
-    "preact": "https://esm.sh/preact@10.8.2",
-    "preact/": "https://esm.sh/preact@10.8.2/",
-    "preact-render-to-string": "https://esm.sh/preact-render-to-string@5.2.0?deps=preact@10.8.2",
-    "@twind": "./utils/twind.ts",
+    "$fresh/": "https://deno.land/x/fresh@1.1.1/",
+    "preact": "https://esm.sh/preact@10.11.0",
+    "preact/": "https://esm.sh/preact@10.11.0/",
+    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@5.2.4",
     "twind": "https://esm.sh/twind@0.16.17",
     "twind/": "https://esm.sh/twind@0.16.17/",
     "twind/content": "https://esm.sh/@twind/content@0.1.0",
-    "rxjs": "https://esm.sh/rxjs"
+    "rxjs": "https://esm.sh/rxjs",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.0.3",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.0.1"
   }
 }

@@ -1,6 +1,3 @@
-/** @jsx h */
-import { h } from 'preact';
-import { tw } from '@twind';
 import useGame from '../utils/use_game.ts';
 import { Action, ChatMessage, ChatMessageType, decorateAction } from '../utils/game_engine.ts';
 import { Variants } from '../utils/rules.ts';
@@ -63,7 +60,7 @@ export default function Chat(
   ];
 
   const renderTime = (time: number) => (
-    <div class={tw`text-sm text-gray-500`}>
+    <div class='text-sm text-gray-500'>
       {new Date(time).toLocaleString()}
     </div>
   );
@@ -101,20 +98,20 @@ export default function Chat(
   );
 
   const renderSystemMessage = (group: ChatMessage[]) => (
-    <div class={tw`my-2`}>
+    <div class='my-2'>
       {renderTime(group[0].time)}
-      {group.map((e) => <div class={tw`italic capitalize`}>🖥:&nbsp;{e.message}</div>)}
+      {group.map((e) => <div class='italic capitalize'>🖥:&nbsp;{e.message}</div>)}
     </div>
   );
   const renderChatMessages = (group: ChatMessage[]) => (
-    <div class={tw`my-2`}>
+    <div class='my-2'>
       {renderTime(group[0].time)}
-      <div class={tw`flex items-end`}>
-        <div class={tw`w-8 h-8 leading-8 text-white bg-gray-800 rounded-full`}>
+      <div class='flex items-end'>
+        <div class='w-8 h-8 leading-8 text-white bg-gray-800 rounded-full'>
           {group[0].author?.slice(0, 1)}
         </div>
-        <div class={tw`mx-2 rounded-lg rounded-bl-none px-2 py-1 bg-gray-200`}>
-          {group.map((e) => <div class={tw`text-left`}>{e.message}</div>)}
+        <div class='mx-2 rounded-lg rounded-bl-none px-2 py-1 bg-gray-200'>
+          {group.map((e) => <div class='text-left'>{e.message}</div>)}
         </div>
       </div>
     </div>
@@ -126,8 +123,8 @@ export default function Chat(
       : renderChatMessages(group);
 
   return (
-    <div class={tw`flex-column items-stretch gap-2 w-full text-center`}>
-      <b class={tw`text-lg`}>Chat:</b>
+    <div class='flex-column items-stretch gap-2 w-full text-center'>
+      <b class='text-lg'>Chat:</b>
       <hr></hr>
       {messageGroups.map((group) =>
         isAction(group[0])
@@ -135,25 +132,25 @@ export default function Chat(
           : renderMessages(group as ChatMessage[])
       )}
 
-      <div class={tw`flex items-center`}>
+      <div class='flex items-center'>
         {templates.map(({ title, action }) => (
           <button
-            class={tw`p-2 text-white bg-gray-600 rounded-lg mr-2`}
+            class='p-2 text-white bg-gray-600 rounded-lg mr-2'
             onClick={() => action()}
           >
             {title}
           </button>
         ))}
 
-        <form class={tw`flex-1 flex p-1`} onSubmit={onSubmit}>
+        <form class='flex-1 flex p-1' onSubmit={onSubmit}>
           <input
-            class={tw`w-full flex-1 px-4 mr-2 bg-gray-100 rounded-full outline-none`}
+            class='w-full flex-1 px-4 mr-2 bg-gray-100 rounded-full outline-none'
             type='text'
             autoComplete='off'
             name='message'
             placeholder='Aa'
           />
-          <input class={tw`p-2 bg-white cursor-pointer`} type='submit' value='✈️' />
+          <input class='p-2 bg-white cursor-pointer' type='submit' value='✈️' />
         </form>
       </div>
     </div>
