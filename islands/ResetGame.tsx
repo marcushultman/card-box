@@ -1,24 +1,19 @@
 import useGame from '../utils/use_game.ts';
-import { clearCache } from '../utils/game_engine.ts';
+import { clearCache, Game } from '../utils/game_engine.ts';
 
 interface Props {
   gameId: string;
+  game: Game;
 }
 
-export default function OfflineMode({ gameId }: Props) {
-  const { resetGame } = useGame(gameId);
+export default function ResetGame({ gameId, game }: Props) {
+  const { resetGame } = useGame(gameId, game);
 
   return (
-    <div>
-      <div>
-        <button onClick={() => resetGame(true)}>HARD RESET</button>
-      </div>
-      <div>
-        <button onClick={() => resetGame(false)}>RESET GAME</button>
-      </div>
-      <div>
-        <button onClick={() => clearCache()}>CLEAR CACHE</button>
-      </div>
+    <div class='flex(& col)'>
+      <button onClick={() => resetGame(true)}>HARD RESET</button>
+      <button onClick={() => resetGame(false)}>RESET GAME</button>
+      <button onClick={() => clearCache()}>CLEAR CACHE</button>
     </div>
   );
 }

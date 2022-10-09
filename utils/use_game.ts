@@ -5,47 +5,44 @@ import {
   addChatMessage,
   addSystemMessage,
   Game,
+  joinGame,
   load,
+  loadPlayers,
+  loadRules,
   onDocs,
   resetGame,
+  startRound,
 } from './game_engine.ts';
 
-function assertGame(game: Game | undefined): asserts game {
-  if (!game) {
-    throw new Error('game not loaded yet');
-  }
+function makeState(docs: Uint8Array[], game: Game) {
+  const rules = loadRules(game.rules);
+  const players = [
+    ...(game.rounds.length ? loadPlayers(game.rounds[game.rounds.length - 1].players) : []),
+    ...loadPlayers(game.waitingPlayers),
+  ];
+  return { docs, game, rules, players };
 }
 
-export default function useGame(id: string) {
-  const [docs, setDocs] = useState<Uint8Array[]>([]);
-  const [game, setGame] = useState<Game>();
+export default function useGame(id: string, initialGame: Game) {
+  const [{ docs, game, rules, players }, setState] = useState(makeState([], initialGame));
 
   useEffect(() => {
-    const sub = onDocs(id).subscribe(setDocs);
+    const sub = onDocs(id).subscribe((docs) => {
+      docs.length && setState(makeState(docs, load<Game>(docs)));
+    });
     return () => sub.unsubscribe();
   }, [id]);
 
-  useEffect(() => {
-    setGame(docs.length ? load<Game>(docs) : undefined);
-  }, [docs]);
-
   return {
     game,
-    addAction: (action: Omit<Action, 'time'>) => {
-      assertGame(game);
-      addAction(id, game, docs, action);
-    },
-    resetGame: (hard: boolean) => {
-      assertGame(game);
-      resetGame(id, game, docs, hard);
-    },
-    addChatMessage: (author: string, message: string) => {
-      assertGame(game);
-      addChatMessage(id, game, docs, author, message);
-    },
-    addSystemMessage: (message: string) => {
-      assertGame(game);
-      addSystemMessage(id, game, docs, message);
-    },
+    rules,
+    players,
+    joinGame: (userid: string) => joinGame(id, game, docs, userid),
+    startRound: () => startRound(id, game, docs),
+    addAction: (action: Omit<Action, 'time'>) => addAction(id, game, docs, action),
+    resetGame: (hard: boolean) => resetGame(id, game, docs, hard),
+    addChatMessage: (userid: string, message: string) =>
+      addChatMessage(id, game, docs, userid, message),
+    addSystemMessage: (message: string) => addSystemMessage(id, game, docs, message),
   };
 }

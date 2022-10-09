@@ -1,28 +1,42 @@
-import useGame from '../utils/use_game.ts';
-import { Action, ChatMessage, ChatMessageType, decorateAction } from '../utils/game_engine.ts';
+import { h, JSX } from 'preact';
+import { tw } from 'twind';
+import {
+  Action,
+  ChatMessage,
+  ChatMessageType,
+  decorateAction,
+  Game,
+} from '../utils/game_engine.ts';
 import { Variants } from '../utils/rules.ts';
 
-interface Props {
-  author: string;
-  gameId: string;
+interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
+  userid: string;
+  game: Game;
+  addChatMessage: (userid: string, message: string) => void;
+  visible: boolean;
+  offset: number;
 }
+
+type Event = Action | ChatMessage;
 
 function byTime(lhs: { time: number }, rhs: { time: number }) {
   return lhs.time - rhs.time;
 }
 
-function isAction(e: ChatMessage | Action): e is Action {
+function isAction(e: Event): e is Action {
   return 'item' in e;
 }
 
 export default function Chat(
-  { author, gameId }: Props,
+  { userid, game, addChatMessage, visible, offset, ...props }: Props,
 ) {
-  const { game, addChatMessage, addSystemMessage } = useGame(gameId);
+  const templateCls = tw`p-2 text-white bg-gray-600 rounded-lg mr-2`;
+  const timeCls = tw`text-sm text-gray-500`;
+  const userCls = tw`w-8 h-8 leading-8 text-white bg-gray-800 rounded-full`;
+  const messageCls = tw`mx-2 rounded-lg rounded-bl-none px-2 py-1 bg-gray-200`;
 
-  if (!game) {
-    return <div></div>;
-  }
+  const heightZeroCls = tw`max-h-0`;
+  const heightAutoCls = tw`max-h-screen`;
 
   const onSubmit = (e: h.JSX.TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,20 +44,23 @@ export default function Chat(
     const formData = new FormData(form);
     const message = formData.get('message');
     if (typeof message === 'string' && message.length) {
-      addChatMessage(author, message);
+      addChatMessage(userid, message);
       form.reset();
     }
   };
 
-  type Event = Action | ChatMessage;
-
   const shouldCombine = (group: Event[], rhs: Event) => {
     const lhs = group[group.length - 1];
-    return isAction(lhs) === isAction(rhs) && lhs.author === rhs.author &&
+    return isAction(lhs) === isAction(rhs) && lhs.userid === rhs.userid &&
       rhs.time - lhs.time < 60 * 60 * 1000;
   };
 
-  const events = [...game.messages, ...game.actions].sort(byTime);
+  const events: Event[] = game.messages.slice();
+  if (game.rounds.length) {
+    events.push(...game.rounds[game.rounds.length - 1].actions);
+  }
+  events.sort(byTime);
+
   const messageGroups = events.reduce((groups, e) => {
     const group = groups[groups.length - 1];
     if (group && shouldCombine(group, e)) {
@@ -60,7 +77,7 @@ export default function Chat(
   ];
 
   const renderTime = (time: number) => (
-    <div class='text-sm text-gray-500'>
+    <div class={timeCls}>
       {new Date(time).toLocaleString()}
     </div>
   );
@@ -83,7 +100,7 @@ export default function Chat(
         return (
           <div>
             <div>
-              <i>{e.author}</i>
+              <i>{e.userid}</i>
               &nbsp;moved&nbsp;
               <i>
                 <b>{name}</b>
@@ -107,10 +124,10 @@ export default function Chat(
     <div class='my-2'>
       {renderTime(group[0].time)}
       <div class='flex items-end'>
-        <div class='w-8 h-8 leading-8 text-white bg-gray-800 rounded-full'>
-          {group[0].author?.slice(0, 1)}
+        <div class={userCls}>
+          {group[0].userid?.slice(0, 1)}
         </div>
-        <div class='mx-2 rounded-lg rounded-bl-none px-2 py-1 bg-gray-200'>
+        <div class={messageCls}>
           {group.map((e) => <div class='text-left'>{e.message}</div>)}
         </div>
       </div>
@@ -123,36 +140,49 @@ export default function Chat(
       : renderChatMessages(group);
 
   return (
-    <div class='flex-column items-stretch gap-2 w-full text-center'>
-      <b class='text-lg'>Chat:</b>
-      <hr></hr>
-      {messageGroups.map((group) =>
-        isAction(group[0])
-          ? renderActions(group as Action[])
-          : renderMessages(group as ChatMessage[])
+    <div
+      style={{
+        boxShadow: '0px -3px 5px -2px rgba(0,0,0,0.25)',
+        transform: `translateY(${offset}px)`,
+        transition: 'transform 50ms, max-height 200ms ease-in',
+      }}
+      class={tw(
+        'transition-[max-height] duration-200 ease-in',
+        visible ? heightAutoCls : heightZeroCls,
+        'h-screen flex(& col) justify-end overflow-hidden',
+        'flex(& col) bg-white rounded-t-lg items-stretch gap-2 w-full text-center h-[85vh]',
       )}
+    >
+      <div class='p-2' {...props}>Messages</div>
+      <hr></hr>
+      <div class='flex-1 overflow-scroll'>
+        {messageGroups.map((group) =>
+          isAction(group[0])
+            ? renderActions(group as Action[])
+            : renderMessages(group as ChatMessage[])
+        )}
+      </div>
 
-      <div class='flex items-center'>
+      <hr></hr>
+
+      <div class='items-center'>
         {templates.map(({ title, action }) => (
-          <button
-            class='p-2 text-white bg-gray-600 rounded-lg mr-2'
-            onClick={() => action()}
-          >
+          <button class={templateCls} onClick={() => action()}>
             {title}
           </button>
         ))}
-
-        <form class='flex-1 flex p-1' onSubmit={onSubmit}>
-          <input
-            class='w-full flex-1 px-4 mr-2 bg-gray-100 rounded-full outline-none'
-            type='text'
-            autoComplete='off'
-            name='message'
-            placeholder='Aa'
-          />
-          <input class='p-2 bg-white cursor-pointer' type='submit' value='✈️' />
-        </form>
       </div>
+
+      <form class='flex px-1 pb-4' onSubmit={onSubmit}>
+        <input
+          class='w-full flex-1 px-4 mr-2 bg-gray-100 rounded-full outline-none'
+          type='text'
+          autoComplete='off'
+          name='message'
+          placeholder='Aa'
+        />
+        <input class='p-2 bg-white cursor-pointer' type='submit' value='✈️' />
+      </form>
     </div>
   );
 }

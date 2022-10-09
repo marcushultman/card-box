@@ -42,6 +42,7 @@ export interface Collection {
 export enum SurfaceType {
   SHOW_TOP,
   SHOW_ALL,
+  SHOW_ALL_EXPANDED,
   SHOW_NONE,
   SHOW_NUM,
 }
@@ -55,16 +56,18 @@ export interface Surface {
 //  Config
 
 export interface ConfigCondition {
-  maxPlayers: number;
+  minPlayers: number;
+  maxPlayers?: number;
 }
 
 export interface Config {
-  when?: ConfigCondition;
+  when: ConfigCondition;
   collections?: Collection[];
   surfaces?: RepeatValue<Surface>[];
 }
 
 export interface Rules {
+  name: string;
   configs: Config[];
 }
 
@@ -79,7 +82,28 @@ const makeCard = (name: string, value: number, repeat?: Repetition): RepeatValue
   },
 });
 
-const TURN_INDICATOR: Deck = { items: [{ variants: { turn: {} } }] };
+/*
+const _TURN_INDICATOR: Deck = { items: [{ variants: { turn: {} } }] };
+const _UNUSED_TURN: Rules = {
+  name: '',
+  configs: [
+    {
+      when: { minPlayers: 2 },
+      collections: [
+        { deck: _TURN_INDICATOR, distributions: [{ surfaceClass: 'turn' }] },
+      ],
+      surfaces: [
+        {
+          repeat: { forEach: ForEach.PLAYER },
+          class: 'turn',
+          type: SurfaceType.SHOW_ALL,
+          itemViews: { default: 'turn' },
+        },
+      ],
+    },
+  ],
+};
+*/
 
 const LOVE_LETTER_DECK: Deck = {
   items: [
@@ -95,11 +119,11 @@ const LOVE_LETTER_DECK: Deck = {
 };
 
 const LOVE_LETTER: Rules = {
+  name: 'Love Letter',
   configs: [
     {
-      when: { maxPlayers: 2 },
+      when: { minPlayers: 2, maxPlayers: 2 },
       collections: [
-        { deck: TURN_INDICATOR, distributions: [{ surfaceClass: 'turn' }] },
         {
           deck: LOVE_LETTER_DECK,
           shuffle: true,
@@ -114,12 +138,12 @@ const LOVE_LETTER: Rules = {
       surfaces: [
         {
           class: 'init-1',
-          type: SurfaceType.SHOW_ALL,
+          type: SurfaceType.SHOW_ALL_EXPANDED,
           itemViews: { default: 'back' },
         },
         {
           class: 'init-3',
-          type: SurfaceType.SHOW_ALL,
+          type: SurfaceType.SHOW_ALL_EXPANDED,
           itemViews: { default: 'front' },
         },
         {
@@ -129,21 +153,15 @@ const LOVE_LETTER: Rules = {
         },
         {
           repeat: { forEach: ForEach.PLAYER },
-          class: 'turn',
+          class: 'hand',
           type: SurfaceType.SHOW_ALL,
-          itemViews: { default: 'turn' },
+          itemViews: { local: 'front', default: 'back' },
         },
         {
           repeat: { forEach: ForEach.PLAYER },
           class: 'discard',
           type: SurfaceType.SHOW_ALL,
           itemViews: { default: 'front' },
-        },
-        {
-          repeat: { forEach: ForEach.PLAYER },
-          class: 'hand',
-          type: SurfaceType.SHOW_ALL,
-          itemViews: { local: 'front', default: 'back' },
         },
       ],
     },

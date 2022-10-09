@@ -1,3 +1,4 @@
+import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { SurfaceType } from '../utils/rules.ts';
 import {
@@ -5,6 +6,7 @@ import {
   DecoratedItem,
   DecoratedLocalSurface,
   DecoratedSurface,
+  Game,
 } from '../utils/game_engine.ts';
 import { DraggableCard, DraggableTurn } from '../components/Draggable.tsx';
 import useGame from '../utils/use_game.ts';
@@ -12,8 +14,9 @@ import { IS_BROWSER } from '$fresh/runtime.ts';
 import { assert } from 'https://deno.land/std@0.152.0/testing/asserts.ts';
 
 interface Props {
-  author: string;
+  userid: string;
   gameId: string;
+  game: Game;
   surface: DecoratedLocalSurface | DecoratedSurface;
 }
 
@@ -32,12 +35,12 @@ const imagePromise = new Promise<HTMLImageElement>((onload) => {
 });
 
 export default function SurfaceView(
-  { author, gameId, surface: serverSurface }: Props,
+  { userid, gameId, game: initGame, surface: serverSurface }: Props,
 ) {
   const surfaceId = serverSurface.id;
   const [surface, setSurface] = useState(serverSurface);
   const [hidden, setHidden] = useState<string[]>([]);
-  const { game, addAction } = useGame(gameId);
+  const { game, addAction } = useGame(gameId, initGame);
 
   //  Load surface
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function SurfaceView(
     assert(e.dataTransfer);
     const { surfaceId, itemId } = JSON.parse(e.dataTransfer.getData('application/drag')) as Drag;
     if (surface.id !== surfaceId) {
-      addAction({ author, from: surfaceId, to: surface.id, item: itemId });
+      addAction({ userid, from: surfaceId, to: surface.id, item: itemId });
     }
   }
 
@@ -136,7 +139,7 @@ export default function SurfaceView(
 
   return (
     <div
-      class='m-2 border(2 slate-400) text-center flex(& col)'
+      class='m-2 p-4 rounded-lg bg-coolGray-500 text-center flex(& col)'
       onDragOver={onDragOver}
       onDrop={onDrop}
     >

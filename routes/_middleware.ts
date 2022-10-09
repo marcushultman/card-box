@@ -4,7 +4,7 @@ import { verify } from 'https://deno.land/x/djwt@v2.7/mod.ts';
 import key from '../utils/key.ts';
 
 interface State {
-  username: string;
+  userid: string;
 }
 
 export async function handler(
@@ -23,8 +23,8 @@ export async function handler(
 
   const jwt = cookies['jwt'];
   try {
-    const { username } = await verify(jwt, key) as { username: string };
-    ctx.state.username = username;
+    const { userid } = await verify(jwt, key) as { userid: string };
+    ctx.state.userid = userid;
   } catch (_: unknown) {
     const res = Response.redirect(new URL('/login', requestUrl));
     const headers = new Headers(res.headers);

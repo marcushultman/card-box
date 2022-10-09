@@ -5,31 +5,43 @@
 import config from './deno.json' assert { type: 'json' };
 import * as $0 from './routes/_middleware.ts';
 import * as $1 from './routes/api/joke.ts';
-import * as $2 from './routes/game/[id]/admin.tsx';
-import * as $3 from './routes/index.tsx';
-import * as $4 from './routes/login.tsx';
-import * as $$0 from './islands/Chat.tsx';
+import * as $2 from './routes/game/[id]/index.tsx';
+import * as $3 from './routes/game/[id]/lobby.tsx';
+import * as $4 from './routes/index.tsx';
+import * as $5 from './routes/login.tsx';
+import * as $6 from './routes/logout.tsx';
+import * as $7 from './routes/new.tsx';
+import * as $$0 from './islands/ChatWindow.tsx';
 import * as $$1 from './islands/Counter.tsx';
-import * as $$2 from './islands/NewGameForm.tsx';
-import * as $$3 from './islands/OfflineMode.tsx';
-import * as $$4 from './islands/ResetGame.tsx';
-import * as $$5 from './islands/SurfaceView.tsx';
+import * as $$2 from './islands/DragNDropSurfaceView.tsx';
+import * as $$3 from './islands/GameLobby.tsx';
+import * as $$4 from './islands/GameSentinel.tsx';
+import * as $$5 from './islands/NewGameForm.tsx';
+import * as $$6 from './islands/OfflineMode.tsx';
+import * as $$7 from './islands/ResetGame.tsx';
+import * as $$8 from './islands/SurfacesArea.tsx';
 
 const manifest = {
   routes: {
     './routes/_middleware.ts': $0,
     './routes/api/joke.ts': $1,
-    './routes/game/[id]/admin.tsx': $2,
-    './routes/index.tsx': $3,
-    './routes/login.tsx': $4,
+    './routes/game/[id]/index.tsx': $2,
+    './routes/game/[id]/lobby.tsx': $3,
+    './routes/index.tsx': $4,
+    './routes/login.tsx': $5,
+    './routes/logout.tsx': $6,
+    './routes/new.tsx': $7,
   },
   islands: {
-    './islands/Chat.tsx': $$0,
+    './islands/ChatWindow.tsx': $$0,
     './islands/Counter.tsx': $$1,
-    './islands/NewGameForm.tsx': $$2,
-    './islands/OfflineMode.tsx': $$3,
-    './islands/ResetGame.tsx': $$4,
-    './islands/SurfaceView.tsx': $$5,
+    './islands/DragNDropSurfaceView.tsx': $$2,
+    './islands/GameLobby.tsx': $$3,
+    './islands/GameSentinel.tsx': $$4,
+    './islands/NewGameForm.tsx': $$5,
+    './islands/OfflineMode.tsx': $$6,
+    './islands/ResetGame.tsx': $$7,
+    './islands/SurfacesArea.tsx': $$8,
   },
   baseUrl: import.meta.url,
   config,
