@@ -22,7 +22,10 @@ export const handler: Handlers<Data, State> = {
   async GET(req, ctx) {
     const game = await loadGame(ctx.params.id);
 
-    if (game.rounds.length === 0) {
+    if (
+      !game.rounds.length ||
+      !game.rounds[game.rounds.length - 1].players.includes(ctx.state.userid)
+    ) {
       return Response.redirect(new URL('lobby', `${req.url}/`));
     }
 
