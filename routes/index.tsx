@@ -1,56 +1,78 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
-import { loadGames, loadPlayers, loadRules } from '../utils/game_engine.ts';
-import PlusIcon from 'https://esm.sh/@heroicons/react@2.0.11/24/outline/PlusIcon?alias=react:preact/compat';
+import { loadDecoratedGroupsForUser, loadProfile } from '../utils/loading_v2.ts';
+import { PlusIcon } from '../utils/icons/24/outline.ts';
 import { ProfileIcon } from '../components/ProfileIcon.tsx';
+import { AuthState } from '../utils/auth_state.ts';
+import { DecoratedGroup, Profile } from '../utils/model_v2.ts';
+import { GroupPictures } from '../components/ChatTopBar.tsx';
 
-async function loadAll() {
-  const games = await loadGames();
-  return games.map(({ id, game }) => {
-    const round = game.rounds.length ? game.rounds[game.rounds.length - 1] : undefined;
-    return {
-      id,
-      game,
-      round,
-      rules: loadRules(game.rules),
-      players: [...(round ? loadPlayers(round.players) : []), ...loadPlayers(game.waitingPlayers)],
-    };
-  });
+interface Data extends AuthState {
+  profile: Profile;
+  groups: DecoratedGroup[];
 }
 
-interface State {
-  userid: string;
-}
-
-interface Data extends State {
-  games: Awaited<ReturnType<typeof loadAll>>;
-}
-
-export const handler: Handlers<Data, State> = {
+export const handler: Handlers<Data, AuthState> = {
   async GET(_, ctx) {
-    return ctx.render({ ...ctx.state, games: await loadAll() });
+    const id = ctx.state.authUser.id;
+
+    const [profile, groups] = await Promise.all([
+      loadProfile(id),
+      loadDecoratedGroupsForUser(id),
+    ]);
+    return ctx.render({ ...ctx.state, profile, groups });
   },
 };
 
-export default function Home({ data: { games, userid } }: PageProps<Data>) {
-  return (
-    <div class='p-4 w-screen h-screen relative bg-coolGray-700'>
-      <ProfileIcon userid={userid} class='flex items-center absolute' />
-      <div class='py-3 mb-3 font-bold text(white center lg)'>Games</div>
+export default function Home({ data: { profile, groups } }: PageProps<Data>) {
+  const imgUrl = 'https://via.placeholder.com/64/884444/ffffff';
 
-      {games.map(({ id, round, rules, players }) => (
-        <a href={`/game/${id}`} class='flex p-4 rounded-lg text-white bg-coolGray-500 items-center'>
-          <img class='w-16 h-16 mr-4 rounded' src='https://via.placeholder.com/64/884444/ffffff' />
-          <div class='flex-1'>
-            <div class='text-lg'>{rules.name}</div>
-            <div>{players.length} players</div>
+  return (
+    <div class='fixed w-screen h-full'>
+      {/* Top bar */}
+      <div class='flex items-center p-2'>
+        <ProfileIcon {...profile} />
+        <div class='flex-1 text(lg center) mr-12'>Groups</div>
+      </div>
+      <hr class='mb-2' />
+
+      {groups.length
+        ? groups.map(({ group, games, profiles }) => {
+          const ruleName = games.at(-1)?.rules?.name;
+          const others = Object.values(profiles).filter((p) => p.id !== profile.id);
+          return (
+            <a href={`/groups/${group.id}`}>
+              <div class='flex px-2 gap-4 items-center'>
+                {ruleName
+                  ? (
+                    <div class='relative my-1'>
+                      <img class='w-12 h-12 rounded-full' src={imgUrl} />
+                      <GroupPictures
+                        class='absolute w-5 h-5 bottom-0.5 right-0.5'
+                        players={others}
+                      />
+                    </div>
+                  )
+                  : <GroupPictures class='w-10 h-10 my-2' players={others} />}
+
+                <div class='flex-1'>
+                  <div class='text-lg'>{others.map((p) => p.name).join(', ')}</div>
+                  <div class='text-xs italic'>
+                    {ruleName ? `Playing ${ruleName}` : `No game in progress`}
+                  </div>
+                </div>
+              </div>
+            </a>
+          );
+        })
+        : (
+          <div class='h-full text-center py-4 text-gray-500'>
+            <div>No groups</div>
           </div>
-          <div>{round ? '' : 'waiting to start...'}</div>
-        </a>
-      ))}
+        )}
 
       {
         /* <a
-        class='text-white leading-2 absolute bottom-8 right-8 w-14 h-14 p-3 bg-blue-400 rounded-full'
+        class='text-white absolute bottom-4 right-4 w-12 h-12 p-3 bg-cyan-400 rounded-full'
         href='/new'
       >
         <PlusIcon />

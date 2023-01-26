@@ -1,12 +1,11 @@
-import { createGame } from '../utils/game_engine.ts';
+import { createGroup } from '../utils/loading_v2.ts';
 import { RULES_DB } from '../utils/rules.ts';
 
-export default function NewGameForm() {
+export default function NewGameForm({ userId }: { userId: string }) {
   const onSubmit = async (e: Event) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const rules = formData.get('rules') as string;
-    window.location.replace(`/game/${await createGame(rules)}`);
+    window.location.replace(`/groups/${await createGroup(userId)}`);
   };
 
   return (

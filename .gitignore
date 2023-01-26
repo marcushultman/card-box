@@ -1,0 +1,6 @@
+.graveyard
+.env
+
+static/firebase-messaging-sw.js
+
+utils/placeholder_gifs.ts

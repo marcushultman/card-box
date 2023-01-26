@@ -1,18 +1,26 @@
 {
   "imports": {
-    "automerge": "https://esm.sh/automerge@1.0.1-preview.7",
-    "firebase/app": "https://www.gstatic.com/firebasejs/9.9.1/firebase-app.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/9.9.1/firebase-firestore.js",
+    "@firebase": "./utils/firebase.ts",
     "@firestore": "./utils/firestore.ts",
-    "$fresh/": "https://deno.land/x/fresh@1.1.1/",
+    "@giphy/js-fetch-api": "https://esm.sh/@giphy/js-fetch-api@4.4.0?external=uuid",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.0.1",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.0.3",
+    "$fresh/": "https://deno.land/x/fresh@1.1.2/",
+    "automerge": "https://esm.sh/automerge@1.0.1-preview.7",
+    "firebase-admin/app": "https://esm.sh/firebase-admin@11.3.0/app",
+    "firebase/app": "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/9.14.0/firebase-firestore.js",
+    "firebase/messaging": "https://www.gstatic.com/firebasejs/9.14.0/firebase-messaging.js",
+    "firebase/messaging/sw": "https://www.gstatic.com/firebasejs/9.14.0/firebase-messaging-sw.js",
+    "moment": "https://esm.sh/moment@2.29.4",
+    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@5.2.4",
     "preact": "https://esm.sh/preact@10.11.0",
     "preact/": "https://esm.sh/preact@10.11.0/",
-    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@5.2.4",
+    "rxjs": "https://esm.sh/rxjs@7.5.7",
     "twind": "https://esm.sh/twind@0.16.17",
     "twind/": "https://esm.sh/twind@0.16.17/",
-    "twind/content": "https://esm.sh/@twind/content@0.1.0",
-    "rxjs": "https://esm.sh/rxjs",
-    "@preact/signals": "https://esm.sh/*@preact/signals@1.0.3",
-    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.0.1"
+    "twind/content": "https://esm.sh/*@twind/content@0.1.0",
+    "uuid": "https://esm.sh/uuid"
   }
 }

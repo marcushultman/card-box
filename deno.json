@@ -1,8 +1,10 @@
 {
   "tasks": {
-    "start": "deno run -A --unstable --watch=static/,routes/ dev.ts"
+    "start": "deno task sw & deno run -A --unstable --watch=static/,routes/ dev.ts",
+    "sw": "deno bundle --watch sw/index.ts static/firebase-messaging-sw.js"
   },
   "importMap": "./import_map.json",
+  "lock": false,
   "fmt": {
     "options": {
       "singleQuote": true,

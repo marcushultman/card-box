@@ -1,188 +1,388 @@
 import { h, JSX } from 'preact';
 import { tw } from 'twind';
+import { Item, Surface, Variants } from '../utils/rules.ts';
+import { useEffect } from 'preact/hooks';
+import { PlayerWidgets } from './PlayerWidgets.tsx';
+import chatWindow from '../signals/chat_window.ts';
 import {
-  Action,
-  ChatMessage,
-  ChatMessageType,
-  decorateAction,
-  Game,
-} from '../utils/game_engine.ts';
-import { Variants } from '../utils/rules.ts';
+  ArrowLeftIcon,
+  Bars3Icon,
+  Cog8ToothIcon,
+  EllipsisVerticalIcon,
+  HomeIcon,
+  PaperAirplaneIcon,
+  PauseIcon,
+  PlayIcon,
+  XMarkIcon,
+} from '../utils/icons/24/outline.ts';
+import moment from 'moment';
+import { onMessage } from '../utils/messaging.ts';
+import { tap } from 'rxjs';
+import { batch, useComputed, useSignal } from '@preact/signals';
+import { useRef } from 'preact/hooks';
+import { Card } from './Card.tsx';
+import { AuthState } from '../utils/auth_state.ts';
+import {
+  Attachment,
+  GroupAction,
+  Message,
+  Profile,
+  RoundAction,
+  Transaction,
+} from '../utils/model_v2.ts';
+import {
+  addGame,
+  addMessage,
+  addRound,
+  getPlayersFromGroupState,
+  GroupState,
+} from '../utils/state_v2.ts';
+import {
+  currentRound,
+  decorateTransaction,
+  getItems,
+  getSurfaces,
+} from '../utils/game_engine_v2.ts';
+import QuickActions from './QuickActions.tsx';
 
-interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
-  userid: string;
-  game: Game;
-  addChatMessage: (userid: string, message: string) => void;
-  visible: boolean;
-  offset: number;
+const byTime = (dir: number) => (lhs: { time: number }, rhs: { time: number }) =>
+  dir * (lhs.time - rhs.time);
+
+type MessageGroup = { author: string; messages: Message[] };
+type Event = (GroupAction | RoundAction) & { messageGroup?: MessageGroup };
+
+const hasMessage = (e: Event): e is Event & Required<Pick<GroupAction, 'message'>> =>
+  'message' in e && !!e.message;
+
+const lookupName = (variants: Variants, keys?: string[]) => {
+  const key = keys?.find((key) => key in variants);
+  return key ? variants[key].name : undefined;
+};
+
+const logName = (item: Item, from: Surface, to: Surface) =>
+  lookupName(item.variants, from.itemViews.logFrom) ??
+    lookupName(item.variants, to.itemViews.logTo) ??
+    lookupName(item.variants, from.itemViews.log) ??
+    lookupName(item.variants, to.itemViews.log) ??
+    lookupName(item.variants, from.itemViews.default) ??
+    lookupName(item.variants, to.itemViews.default) ??
+    item.name;
+
+// =============================================================================
+
+interface Props extends AuthState {
+  group: GroupState;
+  updateLastSeen: () => void;
 }
 
-type Event = Action | ChatMessage;
+export default function Chat({ authUser, group, updateLastSeen }: Props) {
+  const { game, round } = currentRound(group);
 
-function byTime(lhs: { time: number }, rhs: { time: number }) {
-  return lhs.time - rhs.time;
-}
+  const players = getPlayersFromGroupState(group);
 
-function isAction(e: Event): e is Action {
-  return 'item' in e;
-}
+  const surfaces = getSurfaces(group) ?? {};
+  const items = getItems(surfaces);
 
-export default function Chat(
-  { userid, game, addChatMessage, visible, offset, ...props }: Props,
-) {
-  const templateCls = tw`p-2 text-white bg-gray-600 rounded-lg mr-2`;
-  const timeCls = tw`text-sm text-gray-500`;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const timeCls = tw`text(sm gray-500) my-1`;
   const userCls = tw`w-8 h-8 leading-8 text-white bg-gray-800 rounded-full`;
-  const messageCls = tw`mx-2 rounded-lg rounded-bl-none px-2 py-1 bg-gray-200`;
+  const messageCls = tw`rounded-2xl px-4 py-1.5`;
 
-  const heightZeroCls = tw`max-h-0`;
-  const heightAutoCls = tw`max-h-screen`;
-
-  const onSubmit = (e: h.JSX.TargetedEvent<HTMLFormElement>) => {
+  const sendMessage = async (e: h.JSX.TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    inputRef.current?.focus();
+
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     const message = formData.get('message');
-    if (typeof message === 'string' && message.length) {
-      addChatMessage(userid, message);
-      form.reset();
+
+    if (typeof message !== 'string' || message.length === 0) {
+      return;
+    }
+
+    const lowercaseMessage = message.toLocaleLowerCase();
+    const taggedPlayers = players.filter((p) =>
+      lowercaseMessage.includes(p.name.toLocaleLowerCase())
+    );
+    const attachments: Attachment[] = [];
+
+    // if (lowercaseMessage === 'start') {
+    //   addGame(group);
+    // }
+    // if (game && lowercaseMessage === 'startround') {
+    //   addRound(game);
+    // }
+
+    if (chatWindow.item.value) {
+      attachments.push({ ...chatWindow.item.value });
+    }
+
+    batch(() => {
+      chatWindow.text.value = '';
+      chatWindow.item.value = null;
+    });
+
+    await addMessage(group, { author: authUser.id, message, attachments, visibleFor: null });
+    updateLastSeen();
+
+    // Send notifications to tagged players (todo: revisit this)
+    if (taggedPlayers.length) {
+      fetch(`/api/group/${group.id}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: taggedPlayers.map((p) => p.id), message }),
+      });
     }
   };
 
-  const shouldCombine = (group: Event[], rhs: Event) => {
-    const lhs = group[group.length - 1];
-    return isAction(lhs) === isAction(rhs) && lhs.userid === rhs.userid &&
-      rhs.time - lhs.time < 60 * 60 * 1000;
-  };
+  // Subscribe to message notifications
+  useEffect(() => {
+    const unsub = onMessage().pipe(tap((x) => console.log({ x }))).subscribe();
+    return () => unsub.unsubscribe();
+  }, []);
 
-  const events: Event[] = game.messages.slice();
-  if (game.rounds.length) {
-    events.push(...game.rounds[game.rounds.length - 1].actions);
+  function shouldCombine(
+    lhs: Event | undefined,
+    rhs: Event & Required<Pick<GroupAction, 'message'>>,
+  ): lhs is Event & Required<Pick<Event, 'messageGroup'>> {
+    return !!lhs && !!lhs.messageGroup && rhs.time - lhs.time < 60 * 60 * 1000 &&
+      rhs.message.author === lhs.messageGroup.author;
   }
-  events.sort(byTime);
 
-  const messageGroups = events.reduce((groups, e) => {
-    const group = groups[groups.length - 1];
-    if (group && shouldCombine(group, e)) {
-      (group as unknown[]).push(e);
-    } else {
-      (groups as unknown[]).push([e]);
-    }
-    return groups;
-  }, [] as (Action[] | ChatMessage[])[]);
+  const actions = [...group.actions.value, ...round?.actions.value ?? []];
 
-  const templates: { title: string; action: () => void }[] = [
-    // { title: 'Do this?', action: () => addSystemMessage('do this') },
-    // { title: 'Do that?', action: () => addSystemMessage('do that') },
-  ];
+  const events: Event[] = actions
+    .sort(byTime(1))
+    .reduce<Event[]>((events, action) => {
+      if (hasMessage(action)) {
+        const event = events.at(-1);
+        if (shouldCombine(event, action)) {
+          event.messageGroup.messages.push(action.message);
+        } else {
+          const { time, message: { author } } = action;
+          events.push({ time, messageGroup: { author, messages: [action.message] } });
+        }
+      } else {
+        events.push(action);
+      }
+      return events;
+    }, [])
+    .sort(byTime(-1));
+
+  // RENDER
 
   const renderTime = (time: number) => (
     <div class={timeCls}>
-      {new Date(time).toLocaleString()}
+      {moment(new Date(time)).fromNow()}
     </div>
   );
 
-  const lookupName = (variants: Variants, key?: string) =>
-    key ? variants[key]?.metadata?.name as string | undefined : undefined;
+  const renderAttachment = ({ itemId, itemView }: Attachment) => (
+    <Card variant={items[itemId].variants[itemView]} />
+  );
 
-  const renderActions = (group: Action[]) => (
-    <div>
-      {renderTime(group[0].time)}
-      {group.map((e) => {
-        const { from, to, item } = decorateAction(game, e);
-        const name = lookupName(item.variants, from.itemViews.log) ??
-          lookupName(item.variants, from.itemViews.default) ??
-          lookupName(item.variants, to.itemViews.default) ??
-          item.metadata?.name as string | undefined;
-        if (!name) {
-          return null;
-        }
-        return (
-          <div>
-            <div>
-              <i>{e.userid}</i>
-              &nbsp;moved&nbsp;
-              <i>
-                <b>{name}</b>
-              </i>
-              &nbsp;from <b>{from.repeated?.value} {from.class}</b>
-              &nbsp;to <b>{to.repeated?.value} {to.class}</b>
-            </div>
+  const renderTransaction = (time: number, transaction: Transaction) => {
+    const shouldRender = surfaces[transaction.from].log?.from &&
+      surfaces[transaction.to].log?.to;
+
+    if (!shouldRender) {
+      return;
+    }
+    const { from, to, item } = decorateTransaction(surfaces, transaction);
+
+    const itemName = logName(item, from, to);
+    const player = players.find((p) => p.id === transaction.userid);
+
+    if (!itemName || !player) {
+      return null;
+    }
+    return (
+      <div>
+        {renderTime(time)}
+        <div class='flex items-end'>
+          <div class={tw(userCls, 'mr-2')}>{player.name.slice(0, 1)}</div>
+          <div class='py-1'>
+            {player.name} played <b>{itemName}</b>
           </div>
-        );
-      })}
-    </div>
-  );
-
-  const renderSystemMessage = (group: ChatMessage[]) => (
-    <div class='my-2'>
-      {renderTime(group[0].time)}
-      {group.map((e) => <div class='italic capitalize'>🖥:&nbsp;{e.message}</div>)}
-    </div>
-  );
-  const renderChatMessages = (group: ChatMessage[]) => (
-    <div class='my-2'>
-      {renderTime(group[0].time)}
-      <div class='flex items-end'>
-        <div class={userCls}>
-          {group[0].userid?.slice(0, 1)}
-        </div>
-        <div class={messageCls}>
-          {group.map((e) => <div class='text-left'>{e.message}</div>)}
         </div>
       </div>
+    );
+  };
+
+  const renderMessages = (time: number, { author, messages }: MessageGroup) => (
+    <div class='my-2'>
+      {renderTime(time)}
+      {author !== authUser.id
+        ? (
+          <div class='flex items-end'>
+            <div class={tw(userCls, 'mr-2')}>
+              {author.slice(0, 1)}
+            </div>
+            <div class='flex(& col) items-start gap-0.5'>
+              {messages.map((e) => (
+                <div class={tw(messageCls, 'bg-gray-200')}>
+                  {e.attachments?.map((attachment) => renderAttachment(attachment))}
+                  {e.message}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+        : (
+          <div class='flex flex-row-reverse'>
+            <div class='flex(& col) items-end gap-0.5'>
+              {messages.map((e) => (
+                <div class={tw(messageCls, 'bg-blue-300')}>
+                  {e.attachments?.map((attachment) => renderAttachment(attachment))}
+                  {e.message}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
     </div>
   );
 
-  const renderMessages = (group: ChatMessage[]) =>
-    group[0].type === ChatMessageType.SYSTEM
-      ? renderSystemMessage(group)
-      : renderChatMessages(group);
+  const taggedPlayers = useComputed(() => {
+    const prefix = chatWindow.text.value.match(/@(\S*)$/)?.[1];
+    if (!prefix || prefix.length < 1) {
+      return;
+    }
+    return players.filter((player) =>
+      player.name.toLocaleLowerCase().startsWith(prefix.toLocaleLowerCase())
+    );
+  });
+
+  const insertPlayer = (player: Profile) => {
+    const text = chatWindow.text.value;
+    chatWindow.text.value = `${text.slice(0, text.lastIndexOf('@'))}${player.name} `;
+    inputRef.current?.focus();
+  };
+
+  const onKeyDown = (e: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Tab' && taggedPlayers.value?.length === 1) {
+      insertPlayer(taggedPlayers.value[0]);
+      e.preventDefault();
+    }
+  };
+
+  const onInput = (e: JSX.TargetedEvent<HTMLInputElement>) => {
+    chatWindow.text.value = e.currentTarget.value;
+  };
+
+  const gameMenuVisible = useSignal(false);
+  const toggleGameMenu = () => gameMenuVisible.value = !gameMenuVisible.value;
+
+  const clearAttachment = () =>
+    batch(() => {
+      chatWindow.item.value = null;
+      chatWindow.text.value = '';
+    });
 
   return (
-    <div
-      style={{
-        boxShadow: '0px -3px 5px -2px rgba(0,0,0,0.25)',
-        transform: `translateY(${offset}px)`,
-        transition: 'transform 50ms, max-height 200ms ease-in',
-      }}
-      class={tw(
-        'transition-[max-height] duration-200 ease-in',
-        visible ? heightAutoCls : heightZeroCls,
-        'h-screen flex(& col) justify-end overflow-hidden',
-        'flex(& col) bg-white rounded-t-lg items-stretch gap-2 w-full text-center h-[85vh]',
+    <div class='flex(& 1 col) overflow-hidden bg-white text-black text-center'>
+      {/* ROUND IS ACTIVE - PLAYER LIST AND WIDGETS */}
+      {
+        /* {game && (
+        <div class='mt-1'>
+          {round
+            ? (
+              <div>
+                Playing <i>{game.rules.name}</i>
+              </div>
+            )
+            : (
+              <div>
+                Waiting to start <i>{game.rules.name}</i>
+              </div>
+            )}
+          {playerList.map((player) => (
+            <div class='flex items-center my-1 px-2'>
+              <div class='flex(& 1) items-center'>
+                <img class='w-8 h-8 rounded-full mr-2' src={player.img} />
+                <div class=''>{player.name}</div>
+              </div>
+              {round && config && player.player
+                ? (
+                  <PlayerWidgets
+                    ref={round.ref}
+                    config={config}
+                    playerId={player.id}
+                    player={player.player}
+                  />
+                )
+                : null}
+            </div>
+          ))}
+          {canStartRound ? <button>Start round</button> : null}
+        </div>
       )}
-    >
-      <div class='p-2' {...props}>Messages</div>
-      <hr></hr>
-      <div class='flex-1 overflow-scroll'>
-        {messageGroups.map((group) =>
-          isAction(group[0])
-            ? renderActions(group as Action[])
-            : renderMessages(group as ChatMessage[])
+      {game && <hr class='mt-1' />} */
+      }
+
+      <div class='flex flex-col-reverse flex-1 overflow-scroll px-2'>
+        {events.map((e) =>
+          e.messageGroup
+            ? renderMessages(e.time, e.messageGroup)
+            : 'transaction' in e && e.transaction
+            ? renderTransaction(e.time, e.transaction)
+            : null
         )}
       </div>
 
-      <hr></hr>
+      <hr class='mb-1' />
 
-      <div class='items-center'>
-        {templates.map(({ title, action }) => (
-          <button class={templateCls} onClick={() => action()}>
-            {title}
+      {taggedPlayers.value
+        ? (
+          <div class='flex(& wrap) p-2'>
+            {taggedPlayers.value?.map((player) => (
+              <div
+                class='px-2 py-0.5 rounded-full bg-gray-300'
+                onClick={() => insertPlayer(player)}
+              >
+                {player.name}
+              </div>
+            ))}
+          </div>
+        )
+        : null}
+
+      {chatWindow.item.value
+        ? (
+          <div class='m-2 flex gap-2 items-center justify-center'>
+            {renderAttachment(chatWindow.item.value)}
+            <XMarkIcon className='w-6' onClick={clearAttachment} />
+          </div>
+        )
+        : null}
+
+      {/* Input */}
+      <div class='flex mt-1 pb-2'>
+        <button class='px-2 focus:outline-none' onClick={toggleGameMenu}>
+          <EllipsisVerticalIcon className='w-6' />
+        </button>
+
+        <form class='flex(& 1)' onSubmit={sendMessage}>
+          <input
+            class='w-full flex-1 py-2 px-4 bg-gray-100 rounded-full outline-none'
+            type='text'
+            autoComplete='off'
+            name='message'
+            placeholder='Aa'
+            ref={inputRef}
+            value={chatWindow.text.value}
+            onKeyDown={onKeyDown}
+            onChange={onInput}
+          />
+          <button class='px-2 cursor-pointer' type='submit'>
+            <PaperAirplaneIcon className='w-6' />
           </button>
-        ))}
+        </form>
       </div>
 
-      <form class='flex px-1 pb-4' onSubmit={onSubmit}>
-        <input
-          class='w-full flex-1 px-4 mr-2 bg-gray-100 rounded-full outline-none'
-          type='text'
-          autoComplete='off'
-          name='message'
-          placeholder='Aa'
-        />
-        <input class='p-2 bg-white cursor-pointer' type='submit' value='✈️' />
-      </form>
+      <QuickActions {...{ group }} visible={gameMenuVisible} />
     </div>
   );
 }

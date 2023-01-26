@@ -4,44 +4,70 @@
 
 import config from './deno.json' assert { type: 'json' };
 import * as $0 from './routes/_middleware.ts';
-import * as $1 from './routes/api/joke.ts';
-import * as $2 from './routes/game/[id]/index.tsx';
-import * as $3 from './routes/game/[id]/lobby.tsx';
-import * as $4 from './routes/index.tsx';
-import * as $5 from './routes/login.tsx';
-import * as $6 from './routes/logout.tsx';
-import * as $7 from './routes/new.tsx';
-import * as $$0 from './islands/ChatWindow.tsx';
-import * as $$1 from './islands/Counter.tsx';
-import * as $$2 from './islands/DragNDropSurfaceView.tsx';
-import * as $$3 from './islands/GameLobby.tsx';
-import * as $$4 from './islands/GameSentinel.tsx';
-import * as $$5 from './islands/NewGameForm.tsx';
-import * as $$6 from './islands/OfflineMode.tsx';
-import * as $$7 from './islands/ResetGame.tsx';
-import * as $$8 from './islands/SurfacesArea.tsx';
+import * as $1 from './routes/api/groups/[id]/chat.ts';
+import * as $2 from './routes/api/joke.ts';
+import * as $3 from './routes/groups/[id]/games/[gameId]/index.tsx';
+import * as $4 from './routes/groups/[id]/index.tsx';
+import * as $5 from './routes/groups/[id]/reset.tsx';
+import * as $6 from './routes/groups/[id]/settings.tsx';
+import * as $7 from './routes/index.tsx';
+import * as $8 from './routes/login/email.tsx';
+import * as $9 from './routes/login/index.tsx';
+import * as $10 from './routes/logout.tsx';
+import * as $11 from './routes/new.tsx';
+import * as $12 from './routes/signup.tsx';
+import * as $13 from './routes/users/[id]/index.tsx';
+import * as $$0 from './islands/ChatNotificationSetting.tsx';
+import * as $$1 from './islands/ChatView.tsx';
+import * as $$2 from './islands/ChatWindow.tsx';
+import * as $$3 from './islands/Counter.tsx';
+import * as $$4 from './islands/EditImage.tsx';
+import * as $$5 from './islands/EditName.tsx';
+import * as $$6 from './islands/GroupSettingsButton.tsx';
+import * as $$7 from './islands/LoginEmail.tsx';
+import * as $$8 from './islands/LoginEmailLink.tsx';
+import * as $$9 from './islands/LoginGoogle.tsx';
+import * as $$10 from './islands/NewGameForm.tsx';
+import * as $$11 from './islands/OfflineMode.tsx';
+import * as $$12 from './islands/ResetGame.tsx';
+import * as $$13 from './islands/ScoreBoard.tsx';
+import * as $$14 from './islands/Signup.tsx';
+import * as $$15 from './islands/SurfacesRow.tsx';
 
 const manifest = {
   routes: {
     './routes/_middleware.ts': $0,
-    './routes/api/joke.ts': $1,
-    './routes/game/[id]/index.tsx': $2,
-    './routes/game/[id]/lobby.tsx': $3,
-    './routes/index.tsx': $4,
-    './routes/login.tsx': $5,
-    './routes/logout.tsx': $6,
-    './routes/new.tsx': $7,
+    './routes/api/groups/[id]/chat.ts': $1,
+    './routes/api/joke.ts': $2,
+    './routes/groups/[id]/games/[gameId]/index.tsx': $3,
+    './routes/groups/[id]/index.tsx': $4,
+    './routes/groups/[id]/reset.tsx': $5,
+    './routes/groups/[id]/settings.tsx': $6,
+    './routes/index.tsx': $7,
+    './routes/login/email.tsx': $8,
+    './routes/login/index.tsx': $9,
+    './routes/logout.tsx': $10,
+    './routes/new.tsx': $11,
+    './routes/signup.tsx': $12,
+    './routes/users/[id]/index.tsx': $13,
   },
   islands: {
-    './islands/ChatWindow.tsx': $$0,
-    './islands/Counter.tsx': $$1,
-    './islands/DragNDropSurfaceView.tsx': $$2,
-    './islands/GameLobby.tsx': $$3,
-    './islands/GameSentinel.tsx': $$4,
-    './islands/NewGameForm.tsx': $$5,
-    './islands/OfflineMode.tsx': $$6,
-    './islands/ResetGame.tsx': $$7,
-    './islands/SurfacesArea.tsx': $$8,
+    './islands/ChatNotificationSetting.tsx': $$0,
+    './islands/ChatView.tsx': $$1,
+    './islands/ChatWindow.tsx': $$2,
+    './islands/Counter.tsx': $$3,
+    './islands/EditImage.tsx': $$4,
+    './islands/EditName.tsx': $$5,
+    './islands/GroupSettingsButton.tsx': $$6,
+    './islands/LoginEmail.tsx': $$7,
+    './islands/LoginEmailLink.tsx': $$8,
+    './islands/LoginGoogle.tsx': $$9,
+    './islands/NewGameForm.tsx': $$10,
+    './islands/OfflineMode.tsx': $$11,
+    './islands/ResetGame.tsx': $$12,
+    './islands/ScoreBoard.tsx': $$13,
+    './islands/Signup.tsx': $$14,
+    './islands/SurfacesRow.tsx': $$15,
   },
   baseUrl: import.meta.url,
   config,

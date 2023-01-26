@@ -1,7 +1,12 @@
-export type Class = string;
+export type ItemClass = string;
+export type SurfaceClass = string;
 export type Value = string | number;
-export type Metadata = Record<string, unknown>;
-export type Variants = Record<Class, { value?: Value; metadata?: Metadata }>;
+
+export interface Variant {
+  image: string;
+  value?: Value;
+  name?: string;
+}
 
 export enum ForEach {
   PLAYER,
@@ -18,8 +23,10 @@ export type RepeatValue<T> = { repeat?: Repetition } & T;
 
 // Item
 
+export type Variants = Record<ItemClass, Variant>;
+
 export interface Item {
-  metadata?: Metadata;
+  name: string;
   variants: Variants;
 }
 
@@ -28,7 +35,7 @@ export interface Deck {
 }
 
 export interface Distribution {
-  surfaceClass: Class;
+  surfaceClass: SurfaceClass;
 }
 
 export interface Collection {
@@ -47,10 +54,25 @@ export enum SurfaceType {
   SHOW_NUM,
 }
 
+export enum Placement {
+  CENTER,
+  FRONT,
+  BACK,
+}
+
 export interface Surface {
-  class: Class;
+  class: SurfaceClass;
   type: SurfaceType;
-  itemViews: { local?: Class; log?: Class; default: Class };
+  itemViews: {
+    local?: ItemClass[];
+    logTo?: ItemClass[];
+    logFrom?: ItemClass[];
+    log?: ItemClass[];
+    default: ItemClass[];
+  };
+  placement?: Placement;
+  log?: { from?: boolean; to?: boolean };
+  actions?: { promptShow?: boolean };
 }
 
 //  Config
@@ -60,10 +82,19 @@ export interface ConfigCondition {
   maxPlayers?: number;
 }
 
+export enum WidgetType {
+  POINT_COUNTER,
+}
+
+export interface PlayerWidgetConfig {
+  type: WidgetType;
+}
+
 export interface Config {
   when: ConfigCondition;
   collections?: Collection[];
   surfaces?: RepeatValue<Surface>[];
+  playerWidgets?: PlayerWidgetConfig[];
 }
 
 export interface Rules {
@@ -75,35 +106,12 @@ export interface Rules {
 
 const makeCard = (name: string, value: number, repeat?: Repetition): RepeatValue<Item> => ({
   repeat,
-  metadata: { name: 'Card' },
+  name: 'Card',
   variants: {
-    front: { value, metadata: { name, image: `/cards/${name.toLowerCase()}.jpg` } },
-    back: { metadata: { image: '/back.jpg' } },
+    front: { value, name, image: `/cards/${name.toLowerCase()}.jpg` },
+    back: { image: '/back.jpg' },
   },
 });
-
-/*
-const _TURN_INDICATOR: Deck = { items: [{ variants: { turn: {} } }] };
-const _UNUSED_TURN: Rules = {
-  name: '',
-  configs: [
-    {
-      when: { minPlayers: 2 },
-      collections: [
-        { deck: _TURN_INDICATOR, distributions: [{ surfaceClass: 'turn' }] },
-      ],
-      surfaces: [
-        {
-          repeat: { forEach: ForEach.PLAYER },
-          class: 'turn',
-          type: SurfaceType.SHOW_ALL,
-          itemViews: { default: 'turn' },
-        },
-      ],
-    },
-  ],
-};
-*/
 
 const LOVE_LETTER_DECK: Deck = {
   items: [
@@ -139,29 +147,38 @@ const LOVE_LETTER: Rules = {
         {
           class: 'init-1',
           type: SurfaceType.SHOW_ALL_EXPANDED,
-          itemViews: { default: 'back' },
+          itemViews: { default: ['back'] },
         },
         {
           class: 'init-3',
-          type: SurfaceType.SHOW_ALL_EXPANDED,
-          itemViews: { default: 'front' },
+          type: SurfaceType.SHOW_ALL,
+          itemViews: { default: ['front'] },
         },
         {
           class: 'pile',
           type: SurfaceType.SHOW_TOP,
-          itemViews: { default: 'back' },
+          itemViews: { default: ['back'] },
         },
         {
           repeat: { forEach: ForEach.PLAYER },
           class: 'hand',
           type: SurfaceType.SHOW_ALL,
-          itemViews: { local: 'front', default: 'back' },
+          itemViews: { local: ['front'], default: ['back'] },
+          placement: Placement.BACK,
+          actions: { promptShow: true },
+          log: { from: true },
         },
         {
           repeat: { forEach: ForEach.PLAYER },
           class: 'discard',
           type: SurfaceType.SHOW_ALL,
-          itemViews: { default: 'front' },
+          itemViews: { default: ['front'] },
+          log: { to: true },
+        },
+      ],
+      playerWidgets: [
+        {
+          type: WidgetType.POINT_COUNTER,
         },
       ],
     },

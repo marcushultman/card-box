@@ -1,7 +1,10 @@
 import { useState } from 'preact/hooks';
 import { tw } from 'twind';
 import { content } from 'twind/content';
-import { goOffline, goOnline } from '../utils/game_engine.ts';
+// import { goOffline, goOnline } from '../utils/game_engine.ts';
+
+const goOffline = () => {};
+const goOnline = () => {};
 
 export default function OfflineMode() {
   const [online, setOnlineState] = useState(true);

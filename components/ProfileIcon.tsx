@@ -1,19 +1,14 @@
 import { JSX } from 'preact';
 
-interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
-  userid: string;
+interface Props extends JSX.HTMLAttributes<HTMLAnchorElement> {
+  id: string;
+  img: string;
 }
 
-export function ProfileIcon({ userid, ...props }: Props) {
+export function ProfileIcon({ id, img, ...props }: Props) {
   return (
-    <div {...props}>
-      <a href={`/users/${userid}`}>
-        <img
-          class='w-12 h-12 rounded-full'
-          src={`https://via.placeholder.com/64?text=${userid}`}
-          alt={userid}
-        />
-      </a>
-    </div>
+    <a href={`/users/${id}`} {...props}>
+      <img class='w-12 h-12 rounded-full' src={img} alt={id} />
+    </a>
   );
 }
