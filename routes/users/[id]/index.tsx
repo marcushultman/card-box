@@ -17,26 +17,12 @@ export const handler: Handlers<Data, AuthState> = {
     const profile = await loadProfile(ctx.params.id);
     return ctx.render({ ...ctx.state, profile });
   },
-  async POST(req, ctx) {
-    const data = await req.formData();
-    const name = data.get('name') as string | undefined;
-    // todo: implement email change
-    // const email = data.get('email') as string | undefined;
-    const img = data.get('img') as string | undefined;
-
-    if (name !== undefined) {
-      await updateProfile(ctx.params.id, { name, img });
-    }
-
-    const profile = await loadProfile(ctx.params.id);
-    return ctx.render({ ...ctx.state, profile });
-  },
 };
 
 export default function UserPage({ data: { profile } }: PageProps<Data>) {
   return (
     <div class='fixed p-4 w-screen h-full'>
-      <div class='flex'>
+      <div class='flex items-center'>
         <a class='p-2' href='javascript:history.back()'>
           <ArrowLeftIcon className={tw`w-6`} />
         </a>

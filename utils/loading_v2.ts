@@ -27,7 +27,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { combineLatest, concat, firstValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
+import { combineLatest, concat, firstValueFrom, map, Observable, of, switchMap } from 'rxjs';
 import toIdMap from './id_map.ts';
 import {
   DecoratedGame,
@@ -41,7 +41,6 @@ import {
   Profile,
   Round,
   RoundAction,
-  RoundPlayer,
   RoundRef,
   Transaction,
   WithId,
@@ -108,7 +107,7 @@ export function onProfile(id: string) {
   return onProfiles(new Set([id])).pipe(map(([profile]) => profile));
 }
 
-function loadProfiles(idSet: Set<string>) {
+export function loadProfiles(idSet: Set<string>) {
   return firstValueFrom(onProfiles(idSet));
 }
 
@@ -117,18 +116,32 @@ export function loadProfile(id: string) {
 }
 
 export async function updateProfile(id: string, update: Partial<Profile>) {
-  await setDoc(doc(db, 'users', id), update, { merge: true });
+  const data = typeof update.name === 'string'
+    ? { ...update, _name: update.name.toLocaleLowerCase() }
+    : update;
+  await setDoc(doc(db, 'users', id), data, { merge: true });
+}
+
+// Search user
+
+export function searchProfileOp(text: string) {
+  const lowerCaseText = text.toLocaleLowerCase();
+  return onQuery<Profile>(
+    collection(db, 'users'),
+    where('_name', '>=', lowerCaseText),
+    where('_name', '<=', lowerCaseText + '\uf8ff'),
+  );
 }
 
 // Group
 
-export function groupPlayerIds({ users }: Group, round?: Round) {
-  const players = Object.keys(round?.players ?? {});
+export function groupPlayerIds({ users }: Group, game?: Game) {
+  const players = Object.keys(game?.players ?? {});
   return new Set([...users, ...players]);
 }
 
-function onGroupProfiles(group: Group, round?: Round) {
-  return onProfiles(groupPlayerIds(group, round)).pipe(map(toIdMap));
+function onGroupProfiles(group: Group, game?: Game) {
+  return onProfiles(groupPlayerIds(group, game)).pipe(map(toIdMap));
 }
 
 function decorateGroup(
@@ -136,9 +149,9 @@ function decorateGroup(
   games: DecoratedGame[],
 ): Observable<DecoratedGroup> {
   // todo: read from cache and determine if valid
-  const round = games.at(-1)?.rounds.at(-1);
+  const game = games.at(-1)?.game;
 
-  return onGroupProfiles(group, round).pipe(map((profiles) => ({ group, games, profiles })));
+  return onGroupProfiles(group, game).pipe(map((profiles) => ({ group, games, profiles })));
 }
 
 type FirebaseUser = { uid: string; displayName: string | null; photoURL: string | null };
@@ -256,8 +269,8 @@ export function loadGroupActions(id: string) {
 
 // Group
 
-export async function createGroup(userId: string): Promise<string> {
-  const group: Group = { users: [userId] };
+export async function createGroup(users: string[]): Promise<string> {
+  const group: Group = { users };
   const ref = await addDoc(collection(db, 'groups'), group);
   return ref.id;
 }

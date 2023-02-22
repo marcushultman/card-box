@@ -1,6 +1,6 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
 import { loadDecoratedGroupsForUser, loadProfile } from '../utils/loading_v2.ts';
-import { PlusIcon } from '../utils/icons/24/outline.ts';
+import { PlusIcon, UserPlusIcon } from '../utils/icons/24/outline.ts';
 import { ProfileIcon } from '../components/ProfileIcon.tsx';
 import { AuthState } from '../utils/auth_state.ts';
 import { DecoratedGroup, Profile } from '../utils/model_v2.ts';
@@ -31,7 +31,10 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
       {/* Top bar */}
       <div class='flex items-center p-2'>
         <ProfileIcon {...profile} />
-        <div class='flex-1 text(lg center) mr-12'>Groups</div>
+        <div class='flex-1 text(lg center)'>Groups</div>
+        <a class='w-12 h-12 p-3' href='/new'>
+          <UserPlusIcon />
+        </a>
       </div>
       <hr class='mb-2' />
 

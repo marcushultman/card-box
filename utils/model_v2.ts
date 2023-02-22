@@ -95,8 +95,8 @@ export interface Profile extends User {
   name: string;
   email?: string;
   fcmToken?: string;
-  img: string;
-  color: string; // computed for now
+  img?: string;
+  color?: string; // computed for now
 }
 
 // Refs
