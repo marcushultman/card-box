@@ -5,7 +5,7 @@ import getEnv from './env.ts';
 
 const PROJECT_ID = getEnv('FIREBASE_PROJECT_ID');
 const CLIENT_EMAIL = getEnv('FIREBASE_EMAIL');
-const PRIVATE_KEY = getEnv('FIREBASE_PRIVATE_KE_PKCS8');
+const PRIVATE_KEY = getEnv('FIREBASE_PRIVATE_KEY_PKCS8');
 
 export default async function sendNotification(ids: string[]) {
   const snapshots = await getDocs(query(collection(db, 'users'), where(documentId(), 'in', ids)));
