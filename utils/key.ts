@@ -1,13 +1,13 @@
 import { decode } from 'https://deno.land/std@0.165.0/encoding/base64.ts';
 import { create, Payload, verify } from 'https://deno.land/x/djwt@v2.8/mod.ts';
-import { importPKCS8 } from "https://deno.land/x/google_deno_integration@v1.1/deps.ts";
+import { importPKCS8, importJWK } from "https://deno.land/x/jose@v4.12.0/index.ts";
 import getEnv from './env.ts';
 
 const CLIENT_EMAIL = getEnv('FIREBASE_EMAIL');
 const PRIVATE_KEY_ID = getEnv('FIREBASE_PRIVATE_KEY_ID');
 const PRIVATE_KEY = getEnv('FIREBASE_PRIVATE_KEY_PKCS8');
 
-const ALGORITHM = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
+const ALGORITHM = 'RS256';
 const CLAIMS: Payload = {
   iss: CLIENT_EMAIL,
   sub: CLIENT_EMAIL,
@@ -27,10 +27,8 @@ async function fetchPublicKey() {
   return keys.find(({ kid }) => kid === PRIVATE_KEY_ID)!;
 }
 
-const signKey = await importPKCS8(PRIVATE_KEY, 'RS256', { extractable: true });
-const verifyKey = await crypto.subtle.importKey('jwk', await fetchPublicKey(), ALGORITHM, true, [
-  'verify',
-]);
+const signKey = await importPKCS8(PRIVATE_KEY, ALGORITHM);
+const verifyKey = await importJWK(await fetchPublicKey(), ALGORITHM);
 
 // Public API
 
