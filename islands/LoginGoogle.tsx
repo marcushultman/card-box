@@ -2,7 +2,7 @@ import { JSX } from 'preact';
 import app from '@firebase';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useRef } from 'preact/hooks';
-import { assert } from 'https://deno.land/std@0.170.0/testing/asserts.ts';
+import { assert } from '@std/testing/asserts.ts';
 
 export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
   const formRef = useRef<HTMLFormElement>(null);

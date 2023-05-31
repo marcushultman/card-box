@@ -1,6 +1,6 @@
-import { decode } from 'https://deno.land/std@0.165.0/encoding/base64.ts';
-import { create, Payload, verify } from 'https://deno.land/x/djwt@v2.8/mod.ts';
-import { importPKCS8, importJWK } from "https://deno.land/x/jose@v4.12.0/index.ts";
+import { decode } from '@std/encoding/base64.ts';
+import { create, Payload, verify } from 'djwt';
+import { importPKCS8, importJWK } from "jose";
 import getEnv from './env.ts';
 
 const CLIENT_EMAIL = getEnv('FIREBASE_EMAIL');

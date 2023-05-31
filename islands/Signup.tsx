@@ -3,7 +3,7 @@ import { JSX } from 'preact';
 import app from '@firebase';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { useRef } from 'preact/hooks';
-import { assert } from 'https://deno.land/std@0.170.0/testing/asserts.ts';
+import { assert } from '@std/testing/asserts.ts';
 import { useSignal } from '@preact/signals';
 import { updateProfile } from '../utils/loading_v2.ts';
 

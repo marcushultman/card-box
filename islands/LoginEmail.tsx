@@ -8,7 +8,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useRef } from 'preact/hooks';
-import { assert } from 'https://deno.land/std@0.170.0/testing/asserts.ts';
+import { assert } from '@std/testing/asserts.ts';
 import { useSignal } from '@preact/signals';
 
 export const EMAIL_STORAGE_KEY = 'emailForSignIn';

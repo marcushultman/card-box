@@ -3,7 +3,7 @@ import { JSX } from 'preact';
 import app from '@firebase';
 import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { useEffect, useRef } from 'preact/hooks';
-import { assert } from 'https://deno.land/std@0.170.0/testing/asserts.ts';
+import { assert } from '@std/testing/asserts.ts';
 import { EMAIL_STORAGE_KEY } from './LoginEmail.tsx';
 import { UserIcon } from '../utils/icons/24/outline.ts';
 

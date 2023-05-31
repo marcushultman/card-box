@@ -1,5 +1,5 @@
 import { Handlers } from '$fresh/server.ts';
-import { setCookie } from 'https://deno.land/std@0.121.0/http/cookie.ts';
+import { setCookie } from '@std/http/cookie.ts';
 import { createTokens } from '../utils/key.ts';
 import db from '@firestore';
 import { doc, DocumentSnapshot, getDoc } from 'firebase/firestore';

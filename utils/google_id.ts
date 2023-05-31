@@ -1,4 +1,4 @@
-import { decode, verify } from 'https://deno.land/x/djwt@v2.8/mod.ts';
+import { decode, verify } from 'djwt';
 import { Profile } from './model_v2.ts';
 import getEnv from './env.ts';
 

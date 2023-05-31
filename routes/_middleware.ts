@@ -1,5 +1,5 @@
 import { MiddlewareHandlerContext } from '$fresh/server.ts';
-import { deleteCookie, getCookies } from 'https://deno.land/std@0.121.0/http/cookie.ts';
+import { deleteCookie, getCookies } from '@std/http/cookie.ts';
 import { AuthState } from '../utils/auth_state.ts';
 import { verifyToken } from '../utils/key.ts';
 

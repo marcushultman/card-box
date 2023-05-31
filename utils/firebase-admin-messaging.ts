@@ -1,4 +1,4 @@
-import { GoogleAuth } from 'https://deno.land/x/google_deno_integration@v1.1/mod.ts';
+import { GoogleAuth } from 'google_deno_integration';
 
 interface SubRequest {
   url: string;
