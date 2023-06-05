@@ -2,7 +2,7 @@ import { Signal } from '@preact/signals-core';
 import { useSignal } from '@preact/signals';
 import { tw } from 'twind';
 import { currentRound, findConfig } from '../utils/game_engine_v2.ts';
-import { PlayIcon, StopIcon } from '../utils/icons/24/outline.ts';
+import { PlayIcon, StopIcon } from '../utils/icons/24/solid.ts';
 import { loadRules } from '../utils/loading_v2.ts';
 import { addGame, endGame, GameState, GroupState } from '../utils/state_v2.ts';
 import { Rules } from '../utils/rules.ts';
@@ -24,11 +24,11 @@ function QuickActionButton(
   return (
     <div class='mb-2'>
       <button
-        class={tw(cls, `bg-${color}-${disabled ? 300 : 500}`)}
+        class={tw(cls, `mb-2 bg-${color}-${disabled ? 300 : 500}`)}
         onClick={onSelect}
         disabled={disabled}
       >
-        <Icon className={tw`w-10 h-10`} />
+        <Icon className={tw`w-8 h-8`} />
       </button>
       <div class='text-sm'>{title}</div>
     </div>
@@ -56,12 +56,12 @@ export default function QuickActions({ group, visible }: {
     : false;
 
   const addGameAndNavigate = async () => {
-    waitingStatus.value = 'Starting';
+    waitingStatus.value = 'Starting...';
     const ref = await addGame(group);
     location.replace(new URL(`/groups/${ref.group}/games/${ref.game}`, location.href));
   };
   const endGameAndNavigate = async (game: GameState) => {
-    waitingStatus.value = 'Ending';
+    waitingStatus.value = 'Ending...';
     await endGame(game);
     location.replace(new URL(`/groups/${game.ref.group}`, location.href));
   };
@@ -71,12 +71,10 @@ export default function QuickActions({ group, visible }: {
   if (waitingStatus.value) {
     contents.push(
       <div class='mb-2'>
-        <div class='p-4 rounded-full bg-gray-500'>
-          <div class='w-10 h-10'>
-            <NinetyRing width='100%' height='100%' color='white' />
-          </div>
+        <div class='w-10 h-10 m-4'>
+          <NinetyRing width='100%' height='100%' color='#888' />
         </div>
-        <div class='text-sm'>{waitingStatus.value}...</div>
+        <div class='text-sm'>{waitingStatus.value}</div>
       </div>,
     );
   } else if (game) {

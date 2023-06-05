@@ -15,8 +15,7 @@ import * as $8 from './routes/login/email.tsx';
 import * as $9 from './routes/login/index.tsx';
 import * as $10 from './routes/logout.tsx';
 import * as $11 from './routes/new.tsx';
-import * as $12 from './routes/signup.tsx';
-import * as $13 from './routes/users/[id]/index.tsx';
+import * as $12 from './routes/users/[id]/index.tsx';
 import * as $$0 from './islands/ChatNotificationSetting.tsx';
 import * as $$1 from './islands/ChatView.tsx';
 import * as $$2 from './islands/ChatWindow.tsx';
@@ -48,8 +47,7 @@ const manifest = {
     './routes/login/index.tsx': $9,
     './routes/logout.tsx': $10,
     './routes/new.tsx': $11,
-    './routes/signup.tsx': $12,
-    './routes/users/[id]/index.tsx': $13,
+    './routes/users/[id]/index.tsx': $12,
   },
   islands: {
     './islands/ChatNotificationSetting.tsx': $$0,

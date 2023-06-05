@@ -15,6 +15,7 @@ import { findConfig, findGameConfig } from '../../../utils/game_engine_v2.ts';
 import { useGroupState } from '../../../utils/state_v2.ts';
 import ScoreBoard from '../../../islands/ScoreBoard.tsx';
 import GroupSettingsButton from '../../../islands/GroupSettingsButton.tsx';
+import TopBar from '../../../components/TopBar.tsx';
 
 interface Data extends AuthState {
   group: DecoratedGroup;
@@ -22,7 +23,18 @@ interface Data extends AuthState {
 }
 
 export const handler: Handlers<Data, AuthState> = {
-  async GET(req, ctx) {
+  async POST(req, ctx) {
+    const data = await req.formData();
+    const action = data.get('action');
+
+    if (action === 'leave') {
+      // todo: implement leave
+      return Response.redirect(new URL(`/`, req.url));
+    }
+
+    return ctx.render();
+  },
+  async GET(_, ctx) {
     const { id } = ctx.params;
     const [group, actions] = await Promise.all([loadDecoratedGroup(id), loadGroupActions(id)]);
 
@@ -36,34 +48,38 @@ export default function ({ data: { authUser, group, actions } }: PageProps<Data>
   //
 
   const currentGame = group.games.at(-1);
-  // const recentGames = group.games.slice(0, -1);
+
+  const title = currentGame
+    ? (
+      <div class='flex-1 text-center'>
+        <span>{currentGame.rules.name}</span>
+        <span class='italic text-sm'>&nbsp;-&nbsp;Round {currentGame.rounds.length}</span>
+        <div class='italic text-xs'>
+          {moment(new Date(currentGame.rounds.at(-1)?.startTime ?? 0)).fromNow()}
+        </div>
+      </div>
+    )
+    : 'Group Settings';
 
   return (
     <div>
-      <div class='flex m-2 '>
+      <TopBar {...{ title }}>
         <a class='p-2 w-10 h-10' href='javascript:history.back()'>
           <ArrowLeftIcon className='-z-10' />
         </a>
+      </TopBar>
 
-        {currentGame
-          ? (
-            <div class='my-1 mr-10 flex-1 text-center'>
-              <span class='text-lg font-bold'>{currentGame.rules.name}</span>
-              <span class='italic'>&nbsp;-&nbsp;Round {currentGame.rounds.length}</span>
-              <div class='italic text-sm'>
-                {moment(new Date(currentGame.rounds.at(-1)?.startTime ?? 0)).fromNow()}
-              </div>
-            </div>
-          )
-          : (
-            <div class='mr-10 flex-1 text-center'>
-              Group Settings
-            </div>
-          )}
-      </div>
+      {currentGame && [
+        <ScoreBoard groupData={group} />,
+        <GroupSettingsButton class='mt-8' groupData={group} />,
+      ]}
 
-      <ScoreBoard groupData={group} />
-      <GroupSettingsButton class='mt-8' groupData={group} />
+      <form method='post' class='flex justify-center'>
+        <input type='hidden' name='action' value='leave' />
+        <button class='px-4 py-2 rounded-full bg-red-400'>
+          Leave group
+        </button>
+      </form>
 
       {/* todo: move to island and make interactive */}
       {

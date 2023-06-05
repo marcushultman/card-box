@@ -1,6 +1,5 @@
-import { decode } from '@std/encoding/base64.ts';
 import { create, Payload, verify } from 'djwt';
-import { importPKCS8, importJWK } from "jose";
+import { importPKCS8, importJWK, JWK } from "jose";
 import getEnv from './env.ts';
 
 const CLIENT_EMAIL = getEnv('FIREBASE_EMAIL');
@@ -22,13 +21,13 @@ async function fetchPublicKey() {
   const res = await fetch(
     'https://www.googleapis.com/service_accounts/v1/jwk/' + CLIENT_EMAIL,
   );
-  type GoogleJWK = JsonWebKey & { kid: string };
+  type GoogleJWK = JWK & { kid: string };
   const { keys }: { keys: GoogleJWK[] } = await res.json();
   return keys.find(({ kid }) => kid === PRIVATE_KEY_ID)!;
 }
 
-const signKey = await importPKCS8(PRIVATE_KEY, ALGORITHM);
-const verifyKey = await importJWK(await fetchPublicKey(), ALGORITHM);
+const signKey = await importPKCS8(PRIVATE_KEY, ALGORITHM) as CryptoKey;
+const verifyKey = await importJWK(await fetchPublicKey(), ALGORITHM) as CryptoKey;
 
 // Public API
 

@@ -117,7 +117,7 @@ export default function ChatWindow({ authUser, groupData, actions }: Props) {
 
   // Keep last seen up-to-date
   useEffect(() => {
-    const s = onGroupActions(group.id).pipe(
+    const s = onGroupActions(group.id, 1).pipe(
       filter(() => chatWindow.visible.value),
       tap(() => updateLastSeen()),
     ).subscribe();

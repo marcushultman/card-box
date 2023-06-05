@@ -5,6 +5,9 @@ import { ProfileIcon } from '../components/ProfileIcon.tsx';
 import { AuthState } from '../utils/auth_state.ts';
 import { DecoratedGroup, Profile } from '../utils/model_v2.ts';
 import { GroupPictures } from '../components/ChatTopBar.tsx';
+import TopBar from '../components/TopBar.tsx';
+import { PuzzlePieceIcon, UserCircleIcon } from '../utils/icons/24/solid.ts';
+import { tw } from 'twind';
 
 interface Data extends AuthState {
   profile: Profile;
@@ -17,29 +20,24 @@ export const handler: Handlers<Data, AuthState> = {
 
     const [profile, groups] = await Promise.all([
       loadProfile(id),
-      loadDecoratedGroupsForUser(id),
+      loadDecoratedGroupsForUser(id, { actions: 1 }),
     ]);
     return ctx.render({ ...ctx.state, profile, groups });
   },
 };
 
 export default function Home({ data: { profile, groups } }: PageProps<Data>) {
-  const imgUrl = 'https://via.placeholder.com/64/884444/ffffff';
-
   return (
     <div class='fixed w-screen h-full'>
-      {/* Top bar */}
-      <div class='flex items-center p-2'>
+      <TopBar title='Groups'>
         <ProfileIcon {...profile} />
-        <div class='flex-1 text(lg center)'>Groups</div>
-        <a class='w-12 h-12 p-3' href='/new'>
+        <a class='w-10 h-10 p-2' href='/new'>
           <UserPlusIcon />
         </a>
-      </div>
-      <hr class='mb-2' />
+      </TopBar>
 
       {groups.length
-        ? groups.map(({ group, games, profiles }) => {
+        ? groups.map(({ group, games, profiles, actions }) => {
           const ruleName = games.at(-1)?.rules?.name;
           const others = Object.values(profiles).filter((p) => p.id !== profile.id);
           return (
@@ -48,7 +46,9 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
                 {ruleName
                   ? (
                     <div class='relative my-1'>
-                      <img class='w-12 h-12 rounded-full' src={imgUrl} />
+                      {undefined
+                        ? <img class='w-12 h-12 rounded-full' src={undefined} />
+                        : <PuzzlePieceIcon className={tw`w-12 h-12 text-coolGray-600`} />}
                       <GroupPictures
                         class='absolute w-5 h-5 bottom-0.5 right-0.5'
                         players={others}
@@ -60,7 +60,13 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
                 <div class='flex-1'>
                   <div class='text-lg'>{others.map((p) => p.name).join(', ')}</div>
                   <div class='text-xs italic'>
-                    {ruleName ? `Playing ${ruleName}` : `No game in progress`}
+                    {ruleName
+                      ? ruleName
+                      : actions.length > 0
+                      ? `${profiles[actions.at(-1)!.message!.author].name}: ${actions.at(-1)
+                        ?.message
+                        ?.message}`
+                      : `No game in progress`}
                   </div>
                 </div>
               </div>

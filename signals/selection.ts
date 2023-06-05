@@ -1,6 +1,6 @@
 import { computed, signal } from '@preact/signals';
 
-export type Selection = { surface: string; item: string; itemVariant: number };
+export type Selection = { surface: string; item: string };
 
 const globalSelection = signal<Selection | undefined>(undefined);
 

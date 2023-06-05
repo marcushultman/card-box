@@ -24,11 +24,11 @@ import {
   RoundRef,
   WithRef,
 } from '../utils/model_v2.ts';
-import { currentRound, getItems, getLocalSurfaces } from '../utils/game_engine_v2.ts';
+import { currentRound, getItems, getLocalSurfaces, viewForItem } from '../utils/game_engine_v2.ts';
 import { addTransaction } from '../utils/loading_v2.ts';
 import { useGroupState } from '../utils/state_v2.ts';
 
-type Surface = DecoratedLocalSurface | DecoratedSurface;
+type Surface = DecoratedLocalSurface;
 
 // SideArrow.tsx
 
@@ -40,11 +40,7 @@ interface SideArrowProps extends JSX.HTMLAttributes<HTMLButtonElement> {
 function SideArrow({ visible, resetScroll, children }: SideArrowProps) {
   const cls = 'w-10 border-none focus:outline-none transition duration-500';
   const opacityCls = `opacity-${visible ? 100 : 0}`;
-  return (
-    <button class={tw(cls, opacityCls)} onClick={resetScroll}>
-      {children}
-    </button>
-  );
+  return <button class={tw(cls, opacityCls)} onClick={resetScroll}>{children}</button>;
 }
 
 //
@@ -139,13 +135,10 @@ export default function SurfacesRow({ type, authUser, groupData, actions }: Prop
       resetScroll();
       globalSelection.value = undefined;
 
-      const { item, itemVariant } = prevSelection;
-
-      const from = surfacesById[prevSelection.surface];
-      const variant = from.itemViews[itemVariant];
+      const { item } = prevSelection;
 
       // todo: ensure move-to is ok (check any/all itemViews)
-      if (!(variant in itemById[item].variants)) {
+      if (!viewForItem(surface, itemById[item])) {
         console.warn('not movable');
         return;
       }
@@ -155,7 +148,6 @@ export default function SurfacesRow({ type, authUser, groupData, actions }: Prop
         from: prevSelection.surface,
         to: surface.id,
         item,
-        variantIndex: itemVariant,
       });
     } else {
       if (!item) {
@@ -163,7 +155,7 @@ export default function SurfacesRow({ type, authUser, groupData, actions }: Prop
       }
       globalSelection.value = !item || item.id === prevSelection?.item
         ? undefined
-        : { surface: surface.id, item: item.id, itemVariant: item.variantIndex };
+        : { surface: surface.id, item: item.id };
     }
   };
 
@@ -174,8 +166,10 @@ export default function SurfacesRow({ type, authUser, groupData, actions }: Prop
   const rowCls = tw`flex(&) my-2 transition duration-[${offset ? 50 : 500}ms]`;
   const transform = `translateX(${offset}px)`;
 
+  const resetSelection = () => globalSelection.value = undefined;
+
   return (
-    <div class={rowCls} style={{ transform }} {...touchHandlers}>
+    <div class={rowCls} style={{ transform }} {...touchHandlers} onClick={resetSelection}>
       <SideArrow visible={offset > 0} {...{ resetScroll }}>
         <ChevronLeftIcon />
       </SideArrow>

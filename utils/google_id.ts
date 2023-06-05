@@ -38,7 +38,12 @@ export default async function getGoogleProfile(jwt: string) {
   const { aud, iss, sub: id, name, email, picture: img } = await verify(jwt, jwk);
 
   if (id && aud === PROJECT_ID && iss === ISSUER) {
-    return { id, name, email, img } as Profile;
+    return {
+      id,
+      ...name ? { name } : undefined,
+      ...email ? { email } : undefined,
+      ...img ? { img } : undefined,
+    } as Profile;
   }
   return null;
 }

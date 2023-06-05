@@ -201,11 +201,9 @@ export async function addTransaction({ ref, actions }: RoundActions, transaction
 // Subscription
 
 function keepProfilesUpToDate(profiles: Signal<Profile>[]) {
-  console.log('keepProfilesUpToDate');
   return onProfiles(new Set(profiles.map((p) => p.value.id))).pipe(
     map(toIdMap),
     tap((profileData) => {
-      console.log('keepProfilesUpToDate cb', Object.keys(profileData).length);
       profiles.forEach((profile) => {
         profile.value = profileData[profile.value.id];
       });

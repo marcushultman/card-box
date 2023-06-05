@@ -20,12 +20,11 @@ interface Props {
 }
 
 export default function SurfaceGroup({ profile, surfaces, onItemSelect }: Props) {
-  const props = { onItemSelect, selectedItem };
   const { name } = profile ?? {};
   return (
     <div className={'mx-2 backdrop(filter blur-sm) bg-coolGray-600 rounded-xl py-4 px-6'}>
       {surfaces[0].repeated ? <div class='text-center'>{name}</div> : null}
-      {surfaces.map((surface) => <SurfaceView {...props} {...{ surface }} />)}
+      {surfaces.map((surface) => <SurfaceView {...{ surface, onItemSelect, selectedItem }} />)}
     </div>
   );
 }

@@ -20,7 +20,7 @@ export function currentRound(group: GroupState) {
 }
 
 export function viewForItem(surface: DecoratedLocalSurface, item: DecoratedItem) {
-  return surface.itemViews.filter((v) => v in item.variants)[item.variantIndex];
+  return surface.itemViews.find((v) => v in item.variants);
 }
 
 export function findConfig(rules: Rules, numPlayers: number) {
@@ -118,7 +118,6 @@ function calculateSurfaces({ seed, rules, actions, players }: Deps) {
     // todo: validation:
     // 1. can this item be on this surface?
     // 2. can the variant be on this surface?
-    item.variantIndex = transaction.variantIndex;
 
     to.items.push(item);
   }
@@ -142,8 +141,9 @@ function toLocalSurface(
   userId: string,
 ): DecoratedLocalSurface {
   const isLocal = surface.repeated?.value === userId;
+  const isPrivate = isLocal && surfaceItemViews.local !== undefined;
   const itemViews = (isLocal ? surfaceItemViews.local : undefined) ?? surfaceItemViews.default;
-  return { isLocal, itemViews, ...surface };
+  return { isLocal, isPrivate, itemViews, ...surface };
 }
 
 export function getLocalSurfaces(group: GroupState, userId: string) {

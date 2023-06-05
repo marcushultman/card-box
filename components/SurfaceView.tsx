@@ -3,13 +3,13 @@ import { tw } from 'twind';
 import { SurfaceType } from '../utils/rules.ts';
 import { Card } from './Card.tsx';
 import { ReadonlySignal } from '@preact/signals';
-import { Square3Stack3DIcon } from '../utils/icons/24/outline.ts';
+import { EyeIcon, Square3Stack3DIcon } from '../utils/icons/24/outline.ts';
 import { DecoratedItem, DecoratedLocalSurface, DecoratedSurface } from '../utils/rules_v2.ts';
 import { viewForItem } from '../utils/game_engine_v2.ts';
 
 type Surface = DecoratedLocalSurface;
 
-interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
+interface Props {
   surface: Surface;
   selectedItem: ReadonlySignal<string | undefined>;
   onItemSelect?: (surface: Surface, item: DecoratedItem | null) => void;
@@ -32,19 +32,16 @@ export default function SurfaceView({ surface, selectedItem, onItemSelect: onSel
     onSelect?.(surface, item);
   };
 
-  const props = { onClick: onSurfaceSelect };
-
   const renderItem = (item: DecoratedItem, cls?: string) => {
     const itemView = viewForItem(surface, item);
+    const isSelected = selectedItem.value === item.id;
 
     if (itemView === 'back' || itemView === 'front') {
-      const transform = selectedItem.value === item.id ? 'translateY(-4px)' : undefined;
-      const shadowColor = selectedItem.value === item.id
-        ? 'rgba(255, 255, 128, .5)'
-        : 'rgba(0, 0, 0, .5)';
+      const transform = isSelected ? 'translateY(-4px)' : undefined;
+      const shadowColor = isSelected ? 'rgba(255, 255, 128, .5)' : 'rgba(0, 0, 0, .5)';
       return (
         <Card
-          class={tw(cls, selectedItem.value === item.id && 'brightness-125 filter')}
+          class={tw(cls, isSelected && 'brightness-125 filter')}
           variant={item.variants[itemView]}
           onClick={(e) => onItemSelect(e, item)}
           style={{ transform, 'box-shadow': `0 4px 32px ${shadowColor}` }}
@@ -55,17 +52,19 @@ export default function SurfaceView({ surface, selectedItem, onItemSelect: onSel
   };
 
   const renderEmpty = () => (
-    <div class={emptyCls} style={emptyStyle} {...props}>
+    <div class={emptyCls} style={emptyStyle} onClick={onSurfaceSelect}>
       <Square3Stack3DIcon className={emptyIconCls} style={emptyIconStyle} />
       <span>Empty</span>
     </div>
   );
 
+  const showAllCls = `flex relative w-[${2 * (surface.items.length - 1) + 5}rem] h-28`;
+
   switch (surface.type) {
     case SurfaceType.SHOW_ALL_EXPANDED:
       return surface.items.length
         ? (
-          <div class='flex' {...props}>
+          <div class='flex' onClick={onSurfaceSelect}>
             {surface.items.map((item) => renderItem(item, 'mx-1'))}
           </div>
         )
@@ -74,24 +73,24 @@ export default function SurfaceView({ surface, selectedItem, onItemSelect: onSel
       return surface.items.length
         ? (
           <div
-            class={`flex relative w-[${2 * (surface.items.length - 1) + 5}rem] h-28`}
-            {...props}
+            class={surface.isPrivate ? 'relative border(& gray-400 dashed) rounded p-2' : ''}
           >
-            {surface.items.map((item, i) =>
-              renderItem(item, tw(`absolute top-0 left-[${2 * i}rem]`))
-            )}
+            <div class={showAllCls} onClick={onSurfaceSelect}>
+              {surface.items.map((item, i) =>
+                renderItem(item, tw(`absolute top-0 left-[${2 * i}rem]`))
+              )}
+            </div>
           </div>
         )
         : renderEmpty();
     case SurfaceType.SHOW_NUM:
-      return <div class='font-bold' {...props}>{surface.items.length}</div>;
+      return <div class='font-bold' onClick={onSurfaceSelect}>{surface.items.length}</div>;
     case SurfaceType.SHOW_TOP:
       return (
-        <div class='flex items-center' {...props}>
+        <div class='flex items-center' onClick={onSurfaceSelect}>
           <span class='mr-2'>{surface.items.length}x</span>
           {surface.items.slice(-1).map((item) => renderItem(item))}
         </div>
       );
   }
-  throw new Error('Unknown SurfaceType');
 }

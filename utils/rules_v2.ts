@@ -9,7 +9,6 @@ export type RepeatedValue<T> = { repeated?: Repeated } & T;
 
 export interface DecoratedItem extends RepeatedValue<Item> {
   id: string;
-  variantIndex: number;
 }
 
 export interface DecoratedSurface extends RepeatedValue<Surface> {
@@ -19,6 +18,7 @@ export interface DecoratedSurface extends RepeatedValue<Surface> {
 
 export interface LocalSurface extends Omit<Surface, 'itemViews'> {
   isLocal: boolean;
+  isPrivate: boolean;
   itemViews: ItemClass[];
 }
 

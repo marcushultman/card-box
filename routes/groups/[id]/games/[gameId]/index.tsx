@@ -1,7 +1,7 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
 import SurfacesRow, { RowType } from '../../../../../islands/SurfacesRow.tsx';
 import ChatWindow from '../../../../../islands/ChatWindow.tsx';
-import { HomeIcon } from '../../../../../utils/icons/24/outline.ts';
+import { ArrowLeftIcon } from '../../../../../utils/icons/24/outline.ts';
 import { AuthState } from '../../../../../utils/auth_state.ts';
 import chatWindow, { chatVisibilityFromUrl } from '../../../../../signals/chat_window.ts';
 import { DecoratedGroup, GroupAction } from '../../../../../utils/model_v2.ts';
@@ -43,13 +43,6 @@ export default function ({ data: { authUser, group, actions } }: PageProps<Data>
   const transform = 'translateZ(-100px) rotateX(25deg)';
   const boardCls = 'fixed w-screen h-full overflow(x-hidden y-scroll) flex justify-center';
   const boardStyle = { perspective: '900px', perspectiveOrigin: '50% 500px' };
-
-  const game = group.games.at(-1);
-
-  if (!game) {
-    throw new Error();
-  }
-
   const data = { authUser, groupData: group, actions };
 
   return (
@@ -64,7 +57,7 @@ export default function ({ data: { authUser, group, actions } }: PageProps<Data>
       </div>
 
       <a class='absolute top-2 left-2 p-2' href='/'>
-        <HomeIcon className='w-6' />
+        <ArrowLeftIcon className='w-6' />
       </a>
 
       <ChatWindow {...data} />

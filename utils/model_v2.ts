@@ -9,7 +9,6 @@ export interface Transaction {
   item: string;
   from: string;
   to: string;
-  variantIndex: number;
 }
 
 export type Attachment = { itemId: string; itemView: string };
@@ -125,4 +124,5 @@ export interface DecoratedGroup {
   group: WithId<Group>;
   games: DecoratedGame[];
   profiles: Record<string, Profile>;
+  actions: WithId<GroupAction>[];
 }

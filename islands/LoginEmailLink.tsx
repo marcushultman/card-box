@@ -10,7 +10,7 @@ import { UserIcon } from '../utils/icons/24/outline.ts';
 export default function LoginEmailLink() {
   const formRef = useRef<HTMLFormElement>(null);
   const onError = (err?: unknown) => {
-    const message = err instanceof Error ? err.message : 'Unexpected error';
+    const message = err instanceof Error ? err.message : `Unexpected error: ${err}`;
     location.replace(`/login/email?error=${message}`);
   };
 

@@ -87,17 +87,14 @@ export function onProfiles(idSet: Set<string>) {
   const ids = [...idSet];
   const colors = ['#ff6698', '#ffb366', '#ffff66', '#98ff66', '#6698ff'];
 
-  return onQuery<Profile | Omit<Profile, 'img'>>(
+  return onQuery<Omit<Profile, 'color'>>(
     collection(db, 'users'),
     where(documentId(), 'in', ids),
   ).pipe(
     map((profiles) =>
       profiles.map<Profile>(({ id, ...props }) => {
-        // computed for now
         const color = colors[id.charCodeAt(0) % colors.length];
-        const img = `https://via.placeholder.com/64/${color.slice(1)}/FFFFFF?text=${id}`;
-
-        return { ...EMPTY_PROFILE, id, img, ...props, color };
+        return { ...EMPTY_PROFILE, id, color, ...props };
       })
     ),
   );
@@ -220,24 +217,37 @@ export function onDecoratedGroup(id: string, games?: string[]) {
   );
 }
 
-export function onDecoratedGroupsForUser(userId: string, games?: string[]) {
+export function onGroupActions(id: string, limit = 512) {
+  return onQuery<GroupAction>(
+    collection(db, 'groups', id, 'actions'),
+    orderBy('time'),
+    limitToLast(limit),
+  );
+}
+
+export interface LoadGroupsPolicy {
+  games?: string[];
+  actions?: number;
+}
+
+export function onDecoratedGroupsForUser(
+  userId: string,
+  { games, actions }: LoadGroupsPolicy = {},
+) {
   return onGroupsForUser(userId).pipe(switchMap((groups) =>
     groups.length
       ? combineLatest(
         groups.map((group) =>
-          onGames(group.id, games).pipe(switchMap((games) => onDecoratedGroupGames(group, games)))
+          combineLatest([
+            actions ? onGroupActions(group.id, actions) : of([]),
+            onGames(group.id, games).pipe(
+              switchMap((games) => onDecoratedGroupGames(group, games)),
+            ),
+          ]).pipe(map(([actions, group]) => ({ ...group, actions })))
         ),
       )
       : of([])
   ));
-}
-
-export function onGroupActions(id: string) {
-  return onQuery<GroupAction>(
-    collection(db, 'groups', id, 'actions'),
-    orderBy('time'),
-    limitToLast(512),
-  );
 }
 
 // todo: switchMap on loggedInUser in order to pass firebase security rules
@@ -259,12 +269,12 @@ export function loadDecoratedGroup(id: string, games?: string[]) {
   return firstValueFrom(onDecoratedGroup(id, games));
 }
 
-export function loadDecoratedGroupsForUser(userId: string, games?: string[]) {
-  return firstValueFrom(onDecoratedGroupsForUser(userId, games));
+export function loadDecoratedGroupsForUser(userId: string, policy?: LoadGroupsPolicy) {
+  return firstValueFrom(onDecoratedGroupsForUser(userId, policy));
 }
 
-export function loadGroupActions(id: string) {
-  return firstValueFrom(onGroupActions(id));
+export function loadGroupActions(id: string, limit?: number) {
+  return firstValueFrom(onGroupActions(id, limit));
 }
 
 // Group

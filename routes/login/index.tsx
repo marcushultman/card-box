@@ -7,26 +7,25 @@ import { doc, DocumentSnapshot, getDoc } from 'firebase/firestore';
 import LoginEmail from '../../islands/LoginEmail.tsx';
 import LoginGoogle from '../../islands/LoginGoogle.tsx';
 import getGoogleProfile from '../../utils/google_id.ts';
-import { updateProfile } from '../../utils/loading_v2.ts';
+import { loadProfile, updateProfile } from '../../utils/loading_v2.ts';
 import { EnvelopeIcon } from '../../utils/icons/24/outline.ts';
+import { Profile } from '../../utils/model_v2.ts';
 
 const redirectToLogin = (req: Request, error = 1000) =>
   Response.redirect(new URL(`/login?error=${error}`, req.url));
 
+async function updateProfileData(profile: Profile) {
+  const exisingProfile = await loadProfile(profile.id);
+  await updateProfile(profile.id, { ...profile, ...exisingProfile });
+}
+
 async function findUserId(data: FormData) {
-  const userid = data.get('userid') as string | null;
   const token = data.get('token') as string | null;
 
-  if (userid) {
-    // todo: verify credentials
-    const snapshot: DocumentSnapshot = await getDoc(doc(db, 'users', userid));
-    if (snapshot.exists()) {
-      return userid;
-    }
-  } else if (token) {
+  if (token) {
     const profile = await getGoogleProfile(token);
     if (profile) {
-      await updateProfile(profile.id, profile);
+      await updateProfileData(profile);
       return profile.id;
     }
   }
@@ -39,10 +38,7 @@ export const handler: Handlers = {
     const uid = await findUserId(data);
 
     if (uid instanceof Error) {
-      uid.message;
       return redirectToLogin(req, 400);
-      // return redirectToLogin(req, 403); - login error
-      // return redirectToLogin(req, 404); - not found
     }
 
     const { gjwt, gjwtexp, jwt, jwtexp } = await createTokens(uid);
@@ -60,34 +56,33 @@ export const handler: Handlers = {
 
 export default function () {
   return (
-    <div class='flex(& col) gap-2 items-center'>
-      <p class='mt-16 mb-6 text-center'>
-        [Card-Box]
-      </p>
+    <div class='fixed w-screen h-full flex(& col) gap-2 items-center'>
+      <div class='relative w-full h-[80px]'>
+        <div class='absolute inset-0 -z-20 border(r([100vw] solid warmGray-600) b([16px] solid transparent))' />
+        <div class='absolute inset-0 bottom-4 -z-10 border(r([100vw] solid warmGray-500) b([16px] solid transparent))' />
+      </div>
 
-      {
-        /* <form class='p-4 flex(& col) w-full' method='post'>
-        <label for='userid'>Username:</label>
-        <input
-          type='text'
-          id='userid'
-          name='userid'
-          class='p-1 mb-6 rounded bg-gray-100'
-          autoComplete='off'
-        />
-        <label for='pwd'>Password:</label>
-        <input type='password' id='pwd' name='pwd' class='p-1 mb-6 rounded bg-gray-100' />
-        <input type='submit' value='Login' class='px-4 py-2 mx-auto rounded-lg bg-green-200' />
-      </form> */
-      }
+      <div class='mt-36 mb-10 text-center'>
+        <div>[Card-Box]</div>
+        <div>[Card-Box]</div>
+        <div>[Card-Box]</div>
+      </div>
 
-      <a class='w-48 flex items-center text(sm gray-600) py-2 shadow' href='/login/email'>
-        <EnvelopeIcon className={tw`w-6 h-6 ml-2 mr-4`} />
-        Sign in with Email
-      </a>
-      <LoginGoogle />
+      <div class='flex(1 & col) gap-3'>
+        <a
+          class='w-48 flex items-center text(sm warmGray-500) font-medium py-2 shadow'
+          href='/login/email'
+        >
+          <EnvelopeIcon className={tw`w-6 h-6 ml-2 mr-4`} />
+          &nbsp;Sign in with Email
+        </a>
+        <LoginGoogle />
+      </div>
 
-      <a class='mt-2 w-48 text(sm blue-500 center) py-2' href='/signup'>Create an account</a>
+      <div class='relative w-full h-[80px]'>
+        <div class='absolute inset-0 -z-20 border(l([100vw] solid warmGray-600) t([16px] solid transparent))' />
+        <div class='absolute inset-0 top-4 -z-10 border(l([100vw] solid warmGray-500) t([16px] solid transparent))' />
+      </div>
     </div>
   );
 }
