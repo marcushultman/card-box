@@ -2,7 +2,6 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import config from './deno.json' assert { type: 'json' };
 import * as $0 from './routes/_middleware.ts';
 import * as $1 from './routes/api/groups/[id]/chat.ts';
 import * as $2 from './routes/api/joke.ts';
@@ -68,7 +67,6 @@ const manifest = {
     './islands/SurfacesRow.tsx': $$15,
   },
   baseUrl: import.meta.url,
-  config,
 };
 
 export default manifest;
