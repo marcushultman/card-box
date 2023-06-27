@@ -8,6 +8,7 @@ import {
   arrayUnion,
   collection,
   CollectionReference,
+  deleteDoc,
   doc,
   documentId,
   DocumentReference,
@@ -27,7 +28,20 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { combineLatest, concat, firstValueFrom, map, Observable, of, switchMap } from 'rxjs';
+import {
+  combineLatest,
+  delay,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  range,
+  retry,
+  skipWhile,
+  switchMap,
+  tap,
+  zip,
+} from 'rxjs';
 import toIdMap from './id_map.ts';
 import {
   DecoratedGame,
@@ -91,6 +105,7 @@ export function onProfiles(idSet: Set<string>) {
     collection(db, 'users'),
     where(documentId(), 'in', ids),
   ).pipe(
+    skipWhile((profiles) => ids.length !== profiles.length),
     map((profiles) =>
       profiles.map<Profile>(({ id, ...props }) => {
         const color = colors[id.charCodeAt(0) % colors.length];
@@ -144,7 +159,7 @@ function onGroupProfiles(group: Group, game?: Game) {
 function decorateGroup(
   group: WithId<Group>,
   games: DecoratedGame[],
-): Observable<DecoratedGroup> {
+): Observable<Omit<DecoratedGroup, 'actions'>> {
   // todo: read from cache and determine if valid
   const game = games.at(-1)?.game;
 
@@ -237,7 +252,7 @@ export function onDecoratedGroupsForUser(
   return onGroupsForUser(userId).pipe(switchMap((groups) =>
     groups.length
       ? combineLatest(
-        groups.map((group) =>
+        groups.map((group, i) =>
           combineLatest([
             actions ? onGroupActions(group.id, actions) : of([]),
             onGames(group.id, games).pipe(
@@ -245,7 +260,10 @@ export function onDecoratedGroupsForUser(
             ),
           ]).pipe(map(([actions, group]) => ({ ...group, actions })))
         ),
-      )
+      ).pipe() //
+      // tap((i) => {
+      //   console.log(i);
+      // }),
       : of([])
   ));
 }
@@ -295,15 +313,19 @@ export async function removeGroupUser(groupId: string, userId: string[]) {
 
 function addGroupAction(groupId: string, props: Partial<GroupAction>) {
   const action: GroupAction = { time: Date.now(), ...props };
-  return concat(
-    of(action),
+  return [
+    action,
     addDoc(collection(db, 'groups', groupId, 'actions'), action)
       .then(({ id }): WithId<GroupAction> => ({ id, ...action })),
-  );
+  ] as const;
 }
 
 export function addMessage(groupId: string, message: Message) {
   return addGroupAction(groupId, { message });
+}
+
+export async function removeMessage(groupId: string, messageId: string) {
+  await deleteDoc(doc(db, 'groups', groupId, 'actions', messageId));
 }
 
 // Game

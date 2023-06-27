@@ -1,4 +1,9 @@
-import { ArrowLeftIcon, CheckIcon, PaperAirplaneIcon } from '../utils/icons/24/outline.ts';
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  PaperAirplaneIcon,
+  ShareIcon,
+} from '../utils/icons/24/outline.ts';
 import { tw } from 'twind';
 import { JSX, RefObject } from 'preact';
 import { createGroup, searchProfileOp } from '../utils/loading_v2.ts';
@@ -25,10 +30,10 @@ export default function NewGameForm({ userId }: { userId: string }) {
     Object.values(searchResult.value).filter(({ selected }) => selected.value)
   );
 
-  const onCreateGroup = async () =>
-    window.location.replace(
-      `/groups/${await createGroup([...selectedUsers.value.map(({ id }) => id), userId])}`,
-    );
+  const onCreateGroup = async () => {
+    const users = [...selectedUsers.value.map(({ id }) => id), userId];
+    window.location.replace(`/groups/${await createGroup(users)}`);
+  };
 
   useEffect(() => {
     const sub = fromInputRef(inputRef)
@@ -36,7 +41,7 @@ export default function NewGameForm({ userId }: { userId: string }) {
       .subscribe((profiles) =>
         searchResult.value = Object.fromEntries([
           ...profiles
-            .filter(({ id }) => id !== userId)
+            .filter(({ id }) => id !== userId) // filter out self
             .map((profile) => [profile.id, { ...profile, selected: signal(false) }]),
           ...Object.entries(searchResult.value).filter(([_, { selected }]) => selected.value),
         ])
@@ -53,6 +58,8 @@ export default function NewGameForm({ userId }: { userId: string }) {
 
   const inviteUrl = location ? new URL('./invite?', location.href) : undefined;
   inviteUrl?.searchParams.set('invite', 'foo');
+
+  const onShare = () => navigator.share({ url: inviteUrl?.toString() });
 
   return (
     <div class='fixed w-screen h-full'>
@@ -74,12 +81,17 @@ export default function NewGameForm({ userId }: { userId: string }) {
         </div>
       </TopBar>
 
-      <div class='flex justify-center my-2'>
+      <div class='flex items-center m-2'>
         <input
-          class='border rounded-lg p-1 outline-none'
+          class='flex-1 border rounded-lg p-1 outline-none'
           value={inviteUrl?.toString()}
           onClick={copyInvite}
         />
+        {navigator.canShare?.() || 1 && (
+              <button class='p-2 w-10 h-10' onClick={onShare}>
+                <ShareIcon className='' />
+              </button>
+            )}
       </div>
 
       <div class='flex(& col)'>

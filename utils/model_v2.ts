@@ -114,6 +114,8 @@ export interface RoundRef extends GameRef {
 export type WithId<T> = { id: string } & T;
 export type WithRef<Ref, T> = { ref: Ref } & T;
 
+export type WithPartialId<T> = Partial<{ id: string }> & T;
+
 export interface DecoratedGame {
   game: WithRef<GameRef, Game>;
   rules: Rules;

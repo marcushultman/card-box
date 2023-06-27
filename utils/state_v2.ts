@@ -13,13 +13,14 @@ import {
   RoundAction,
   RoundRef,
   Transaction,
+  WithPartialId,
   WithRef,
 } from './model_v2.ts';
 import * as loading from './loading_v2.ts';
 import { Rules } from './rules.ts';
 import mapValues from './map_values.ts';
 import { groupPlayerIds, onDecoratedGroup, onGroupActions, onProfiles } from './loading_v2.ts';
-import { combineLatest, firstValueFrom, map, tap } from 'rxjs';
+import { combineLatest, map, tap } from 'rxjs';
 import toIdMap from './id_map.ts';
 
 // state
@@ -49,7 +50,7 @@ export interface GroupState {
   users: Signal<string[]>;
   games: Signal<GameState[]>;
   profiles: Signal<Record<string, Profile>>;
-  actions: Signal<GroupAction[]>;
+  actions: Signal<WithPartialId<GroupAction>[]>;
 }
 
 const toRoundState = ({ ref, startTime, seed, actions }: WithRef<RoundRef, Round>): RoundState => ({
@@ -100,9 +101,14 @@ export async function removeGroupUser({ id, users }: GroupUsers, userId: string[
   users.value = users.value.filter((u) => !userId.includes(u));
 }
 
-export async function addMessage({ id, actions }: GroupActions, message: Message) {
-  const action = await firstValueFrom(loading.addMessage(id, message));
+export function addMessage({ id, actions }: GroupActions, message: Message) {
+  const [action] = loading.addMessage(id, message);
   actions.value = [...actions.value, action];
+}
+
+export async function removeMessage({ id, actions }: GroupActions, messageId: string) {
+  actions.value = actions.value.filter((e) => e.id !== messageId);
+  await loading.removeMessage(id, messageId);
 }
 
 export async function resetGame({ id, games }: GroupGames, hard: boolean) {
@@ -222,6 +228,7 @@ function keepUpToDate(group: GroupState) {
         group.users.value = users.peek();
         group.games.value = games.peek();
         group.profiles.value = profiles.peek();
+        console.log('on update');
         group.actions.value = actions.peek();
       })
     ),

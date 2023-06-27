@@ -38,12 +38,19 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
 
       {groups.length
         ? groups.map(({ group, games, profiles, actions }) => {
-          const ruleName = games.at(-1)?.rules?.name;
+          const game = games.at(-1);
+
           const others = Object.values(profiles).filter((p) => p.id !== profile.id);
+          const lastMessage = actions.length > 0
+            ? `${profiles[actions.at(-1)!.message!.author].name}: ${actions.at(-1)
+              ?.message
+              ?.message}`
+            : undefined;
+
           return (
             <a href={`/groups/${group.id}`}>
               <div class='flex px-2 gap-4 items-center'>
-                {ruleName
+                {game
                   ? (
                     <div class='relative my-1'>
                       {undefined
@@ -55,18 +62,20 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
                       />
                     </div>
                   )
-                  : <GroupPictures class='w-10 h-10 my-2' players={others} />}
+                  : others.length
+                  ? <GroupPictures class='w-10 h-10 my-2' players={others} />
+                  : <ProfileIcon {...profile} />}
 
                 <div class='flex-1'>
-                  <div class='text-lg'>{others.map((p) => p.name).join(', ')}</div>
+                  <div class='text-lg'>
+                    {/* {others.map((p) => p.name).sort().join(', ')} */}
+                    {others.length ? others.map((p) => p.name).join(', ') : <i>New group</i>}
+                  </div>
                   <div class='text-xs italic'>
-                    {ruleName
-                      ? ruleName
-                      : actions.length > 0
-                      ? `${profiles[actions.at(-1)!.message!.author].name}: ${actions.at(-1)
-                        ?.message
-                        ?.message}`
-                      : `No game in progress`}
+                    {[
+                      ...game ? [`Playing ${game.rules.name}`] : [],
+                      ...lastMessage ? [lastMessage] : [],
+                    ].join(' - ')}
                   </div>
                 </div>
               </div>

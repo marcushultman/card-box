@@ -29,6 +29,7 @@ import {
   Profile,
   RoundAction,
   Transaction,
+  WithPartialId,
 } from '../utils/model_v2.ts';
 import {
   addGame,
@@ -36,6 +37,7 @@ import {
   addRound,
   getPlayersFromGroupState,
   GroupState,
+  removeMessage,
 } from '../utils/state_v2.ts';
 import {
   currentRound,
@@ -48,11 +50,11 @@ import QuickActions from './QuickActions.tsx';
 const byTime = (dir: number) => (lhs: { time: number }, rhs: { time: number }) =>
   dir * (lhs.time - rhs.time);
 
-type MessageGroup = { author: string; messages: Message[] };
-type Event = (GroupAction | RoundAction) & { messageGroup?: MessageGroup };
+type MessageAction = WithPartialId<GroupAction> & Required<Pick<GroupAction, 'message'>>;
+type MessageGroup = { author: string; messages: MessageAction[] };
+type Event = (WithPartialId<GroupAction> | RoundAction) & { messageGroup?: MessageGroup };
 
-const hasMessage = (e: Event): e is Event & Required<Pick<GroupAction, 'message'>> =>
-  'message' in e && !!e.message;
+const hasMessage = (e: Event): e is MessageAction => 'message' in e && !!e.message;
 
 const lookupName = (variants: Variants, keys?: string[]) => {
   const key = keys?.find((key) => key in variants);
@@ -77,6 +79,8 @@ interface Props extends AuthState {
 
 export default function Chat({ authUser, group, updateLastSeen }: Props) {
   const { game, round } = currentRound(group);
+
+  const selectedMessage = useSignal<string | undefined>(undefined);
 
   const players = getPlayersFromGroupState(group);
 
@@ -159,10 +163,10 @@ export default function Chat({ authUser, group, updateLastSeen }: Props) {
       if (hasMessage(action)) {
         const event = events.at(-1);
         if (shouldCombine(event, action)) {
-          event.messageGroup.messages.push(action.message);
+          event.messageGroup.messages.push(action);
         } else {
           const { time, message: { author } } = action;
-          events.push({ time, messageGroup: { author, messages: [action.message] } });
+          events.push({ time, messageGroup: { author, messages: [action] } });
         }
       } else {
         events.push(action);
@@ -211,6 +215,9 @@ export default function Chat({ authUser, group, updateLastSeen }: Props) {
     );
   };
 
+  const onMessageSelect = (e: MessageAction) =>
+    selectedMessage.value = selectedMessage.value === e.id ? undefined : e.id;
+
   const renderMessages = (time: number, { author, messages }: MessageGroup) => (
     <div class='my-2'>
       {renderTime(time)}
@@ -223,8 +230,8 @@ export default function Chat({ authUser, group, updateLastSeen }: Props) {
             <div class='flex(& col) items-start gap-0.5'>
               {messages.map((e) => (
                 <div class={tw(messageCls, 'bg-gray-200')}>
-                  {e.attachments?.map((attachment) => renderAttachment(attachment))}
-                  {e.message}
+                  {e.message.attachments?.map((attachment) => renderAttachment(attachment))}
+                  {e.message.message}
                 </div>
               ))}
             </div>
@@ -234,9 +241,22 @@ export default function Chat({ authUser, group, updateLastSeen }: Props) {
           <div class='flex flex-row-reverse'>
             <div class='flex(& col) items-end gap-0.5'>
               {messages.map((e) => (
-                <div class={tw(messageCls, 'bg-blue-300')}>
-                  {e.attachments?.map((attachment) => renderAttachment(attachment))}
-                  {e.message}
+                <div
+                  class={tw(messageCls, 'bg-blue-300 relative')}
+                  onClick={() => onMessageSelect(e)}
+                >
+                  {e.message.attachments?.map((attachment) => renderAttachment(attachment))}
+                  {e.message.message}
+                  {e.id && selectedMessage.value === e.id
+                    ? (
+                      <div
+                        class={tw`absolute right-[75%] -top-[75%] py-2 px-4 opacity-80 bg-black text-white rounded-t-2xl rounded-bl-2xl`}
+                        onClick={() => removeMessage(group, e.id!)}
+                      >
+                        Remove
+                      </div>
+                    )
+                    : undefined}
                 </div>
               ))}
             </div>

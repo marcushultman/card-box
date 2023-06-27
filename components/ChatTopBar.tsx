@@ -49,7 +49,7 @@ export default function ChatTopBar({ authUser, group, showHome, ...props }: Prop
       <div>
         {players.length === 1
           ? 'You'
-          : players.filter((p) => p.id !== authUser.id).map((p) => p.name).join()}
+          : players.filter((p) => p.id !== authUser.id).map((p) => p.name).sort().join(', ')}
       </div>
       <div class='self-stretch flex-1' {...props}></div>
     </a>

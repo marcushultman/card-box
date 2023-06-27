@@ -71,12 +71,12 @@ export default function ({ data: { authUser, group, actions } }: PageProps<Data>
 
       {currentGame && [
         <ScoreBoard groupData={group} />,
-        <GroupSettingsButton class='mt-8' groupData={group} />,
+        <GroupSettingsButton class='mt-8 mb-2' groupData={group} />,
       ]}
 
       <form method='post' class='flex justify-center'>
         <input type='hidden' name='action' value='leave' />
-        <button class='px-4 py-2 rounded-full bg-red-400'>
+        <button class='px-4 py-2 rounded-full text-white bg-red-600'>
           Leave group
         </button>
       </form>
