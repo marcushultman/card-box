@@ -8,12 +8,13 @@ import TopBar from './TopBar.tsx';
 import { UserIcon } from '../utils/icons/24/solid.ts';
 
 interface GroupPicturesProps extends JSX.HTMLAttributes<HTMLDivElement> {
+  class: string;
   players: Profile[];
 }
 
 export function GroupPictures({ players, class: cls, ...props }: GroupPicturesProps) {
-  const upperRightCls = 'w-6 h-6 rounded-full absolute top-0.5 right-0.5';
-  const lowerLeftCls = 'w-6 h-6 rounded-full absolute bottom-0.5 left-0.5';
+  const upperRightCls = 'w-7 h-7 rounded-full absolute top-0.5 right-0.5';
+  const lowerLeftCls = 'w-7 h-7 rounded-full absolute bottom-0.5 left-0.5';
   const iconCls = 'p-1 text-white bg-coolGray-400';
 
   return (

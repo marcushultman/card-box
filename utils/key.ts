@@ -1,5 +1,5 @@
 import { create, Payload, verify } from 'djwt';
-import { importPKCS8, importJWK, JWK } from "jose";
+import { importJWK, importPKCS8, JWK } from 'jose';
 import getEnv from './env.ts';
 
 const CLIENT_EMAIL = getEnv('FIREBASE_EMAIL');

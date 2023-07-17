@@ -1,8 +1,10 @@
 import { JSX } from 'preact';
 import app from '@firebase';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
+
+const usePopup = false;
 
 export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -13,14 +15,18 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // todo: handle failure
-    const result = await signInWithPopup(auth, provider);
-    const { accessToken } = result.user;
+    if (usePopup) {
+      // todo: handle failure
+      const result = await signInWithPopup(auth, provider);
+      const { accessToken } = result.user;
 
-    const tokenEl = formRef.current.elements.namedItem('token') as HTMLInputElement;
-    tokenEl.value = accessToken;
+      const tokenEl = formRef.current.elements.namedItem('token') as HTMLInputElement;
+      tokenEl.value = accessToken;
 
-    formRef.current.submit();
+      formRef.current.submit();
+    } else {
+      await signInWithRedirect(auth, provider);
+    }
   };
 
   return (

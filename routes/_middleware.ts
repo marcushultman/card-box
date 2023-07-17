@@ -3,6 +3,8 @@ import { deleteCookie, getCookies } from '@std/http/cookie.ts';
 import { AuthState } from '../utils/auth_state.ts';
 import { verifyToken } from '../utils/key.ts';
 
+const AUTH_PREFIX = '/__/auth/';
+
 const UNAUTH_RE = [
   /^\/login/,
   /^\/signup$/,
@@ -16,6 +18,13 @@ const PUBLIC_RE = [
 export async function handler(req: Request, ctx: MiddlewareHandlerContext<AuthState>) {
   const requestUrl = new URL(req.url);
   const { jwt, gjwt } = getCookies(req.headers);
+
+  if (requestUrl.pathname.startsWith(AUTH_PREFIX)) {
+    console.log('[auth proxy]', req);
+
+    const path = req.url.substring(req.url.indexOf(AUTH_PREFIX));
+    return new Request('https://card-bored-box.firebaseapp.com' + path, req);
+  }
 
   if (!jwt) {
     if (PUBLIC_RE.some((re) => re.test(requestUrl.pathname))) {

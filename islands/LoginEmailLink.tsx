@@ -45,7 +45,7 @@ export default function LoginEmailLink() {
         <input name='token' />
       </form>
       <div class='w-12 h-12 animate-bounce'>
-        <UserIcon className='' />
+        <UserIcon />
       </div>
       <div class='animate-pulse'>Signing in...</div>
     </div>

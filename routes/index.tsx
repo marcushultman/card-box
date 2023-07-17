@@ -1,7 +1,7 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
 import { loadDecoratedGroupsForUser, loadProfile } from '../utils/loading_v2.ts';
 import { PlusIcon, UserPlusIcon } from '../utils/icons/24/outline.ts';
-import { ProfileIcon } from '../components/ProfileIcon.tsx';
+import { ProfileIcon, ProfileLink } from '../components/Profile.tsx';
 import { AuthState } from '../utils/auth_state.ts';
 import { DecoratedGroup, Profile } from '../utils/model_v2.ts';
 import { GroupPictures } from '../components/ChatTopBar.tsx';
@@ -30,63 +30,64 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
   return (
     <div class='fixed w-screen h-full'>
       <TopBar title='Groups'>
-        <ProfileIcon {...profile} />
+        <ProfileLink {...profile} />
         <a class='w-10 h-10 p-2' href='/new'>
           <UserPlusIcon />
         </a>
       </TopBar>
 
-      {groups.length
-        ? groups.map(({ group, games, profiles, actions }) => {
-          const game = games.at(-1);
+      <div class='flex(& col) gap-2'>
+        {groups.length
+          ? groups.map(({ group, games, profiles, actions }) => {
+            const game = games.at(-1);
 
-          const others = Object.values(profiles).filter((p) => p.id !== profile.id);
-          const lastMessage = actions.length > 0
-            ? `${profiles[actions.at(-1)!.message!.author].name}: ${actions.at(-1)
-              ?.message
-              ?.message}`
-            : undefined;
+            const others = Object.values(profiles).filter((p) => p.id !== profile.id);
+            const lastMessage = actions.length > 0
+              ? `${profiles[actions.at(-1)!.message!.author].name}: ${actions.at(-1)
+                ?.message
+                ?.message}`
+              : undefined;
 
-          return (
-            <a href={`/groups/${group.id}`}>
-              <div class='flex px-2 gap-4 items-center'>
-                {game
-                  ? (
-                    <div class='relative my-1'>
-                      {undefined
-                        ? <img class='w-12 h-12 rounded-full' src={undefined} />
-                        : <PuzzlePieceIcon className={tw`w-12 h-12 text-coolGray-600`} />}
-                      <GroupPictures
-                        class='absolute w-5 h-5 bottom-0.5 right-0.5'
-                        players={others}
-                      />
+            return (
+              <a href={`/groups/${group.id}`}>
+                <div class='flex px-2 gap-4 items-center'>
+                  {game
+                    ? (
+                      <div class='relative'>
+                        {undefined
+                          ? <img class='w-12 h-12 rounded-full' src={undefined} />
+                          : <PuzzlePieceIcon className={tw`w-12 h-12 text-coolGray-600`} />}
+                        <GroupPictures
+                          class='absolute w-5 h-5 bottom-0.5 right-0.5'
+                          players={others}
+                        />
+                      </div>
+                    )
+                    : others.length
+                    ? <GroupPictures class='w-12 h-12' players={others} />
+                    : <ProfileIcon size={12} {...profile} />}
+
+                  <div class='flex-1'>
+                    <div class='text-lg'>
+                      {others.length ? others.map((p) => p.name).join(', ') : <i>New group</i>}
                     </div>
-                  )
-                  : others.length
-                  ? <GroupPictures class='w-10 h-10 my-2' players={others} />
-                  : <ProfileIcon {...profile} />}
-
-                <div class='flex-1'>
-                  <div class='text-lg'>
-                    {/* {others.map((p) => p.name).sort().join(', ')} */}
-                    {others.length ? others.map((p) => p.name).join(', ') : <i>New group</i>}
-                  </div>
-                  <div class='text-xs italic'>
-                    {[
-                      ...game ? [`Playing ${game.rules.name}`] : [],
-                      ...lastMessage ? [lastMessage] : [],
-                    ].join(' - ')}
+                    <div class='text-xs italic'>
+                      {[
+                        ...game ? [`Playing ${game.rules.name}`] : [],
+                        ...lastMessage ? [lastMessage] : [],
+                      ].join(' - ')}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </a>
-          );
-        })
-        : (
-          <div class='h-full text-center py-4 text-gray-500'>
-            <div>No groups</div>
-          </div>
-        )}
+              </a>
+            );
+          })
+          : (
+            <div class='h-full text-center py-4 text-gray-500'>
+              <div>No groups</div>
+            </div>
+          )}
+      </div>
 
       {
         /* <a
