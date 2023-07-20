@@ -1,7 +1,13 @@
 import { JSX } from 'preact';
 import app from '@firebase';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
-import { useRef } from 'preact/hooks';
+import {
+  getAuth,
+  getRedirectResult,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+} from 'firebase/auth';
+import { useEffect, useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
 
 const usePopup = false;
@@ -28,6 +34,15 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
       await signInWithRedirect(auth, provider);
     }
   };
+
+  useEffect(() => {
+    const auth = getAuth(app);
+    getRedirectResult(auth).then((res) => {
+      if (res) {
+        console.log({ res });
+      }
+    });
+  });
 
   return (
     <div {...props}>

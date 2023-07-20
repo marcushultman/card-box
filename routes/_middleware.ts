@@ -23,7 +23,7 @@ export async function handler(req: Request, ctx: MiddlewareHandlerContext<AuthSt
     console.log('[auth proxy]', req);
 
     const path = req.url.substring(req.url.indexOf(AUTH_PREFIX));
-    return new Request('https://card-bored-box.firebaseapp.com' + path, req);
+    return fetch(new Request('https://card-bored-box.firebaseapp.com' + path, req));
   }
 
   if (!jwt) {
