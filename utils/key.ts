@@ -47,7 +47,8 @@ export async function verifyToken(jwt: string) {
   try {
     const { uid } = await verify(jwt, verifyKey) as { uid: string };
     return uid;
-  } catch (_: unknown) {
+  } catch (err: unknown) {
+    console.error('[verifyToken] ERROR:', err);
     return;
   }
 }
