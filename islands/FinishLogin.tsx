@@ -15,7 +15,7 @@ export const LOGIN_TYPE = 'loginType';
 export default function FinishLogin({ type }: { type: string }) {
   const formRef = useRef<HTMLFormElement>(null);
   const onError = (err?: unknown) => {
-    const message = err instanceof Error ? err.message : `Unexpected error: ${err}`;
+    const message = err instanceof Error ? err.message : `Unexpected error${err ? `: ${err}` : ''}`;
     location.replace(`/login/email?error=${message}`);
   };
 
@@ -34,11 +34,13 @@ export default function FinishLogin({ type }: { type: string }) {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithRedirect = async () => {
     const auth = getAuth(app);
     const result = await getRedirectResult(auth).catch(onError);
     if (result) {
       login(result.user.accessToken);
+    } else {
+      onError('redirect/no-result');
     }
   };
 
@@ -47,16 +49,16 @@ export default function FinishLogin({ type }: { type: string }) {
     if (type === 'email') {
       const email = window.localStorage.getItem(EMAIL_STORAGE_KEY);
       if (!email) {
-        onError();
+        onError('email/no-email');
       } else if (!isSignInWithEmailLink(auth, window.location.href)) {
-        onError();
+        onError('email/invalid-email-link');
       } else {
         loginFromLink(email);
       }
-    } else if (type === 'google') {
-      loginWithGoogle();
+    } else if (type === 'redirect') {
+      loginWithRedirect();
     } else {
-      onError();
+      onError('login/unsupported-type');
     }
   }, []);
 

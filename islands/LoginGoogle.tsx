@@ -21,9 +21,10 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
 
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    const url = new URL('/login', location.href);
-    url.searchParams.set(LOGIN_TYPE, 'google');
-    provider.setCustomParameters({ redirect_uri: url.href });
+
+    const url = new URL(location.href);
+    url.searchParams.set(LOGIN_TYPE, 'redirect');
+    window.history.replaceState(null, '', url.href);
 
     if (usePopup) {
       // todo: handle failure
@@ -38,15 +39,6 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
       await signInWithRedirect(auth, provider);
     }
   };
-
-  useEffect(() => {
-    const auth = getAuth(app);
-    getRedirectResult(auth).then((res) => {
-      if (res) {
-        console.log({ res });
-      }
-    });
-  });
 
   return (
     <div {...props}>
