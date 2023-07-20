@@ -1,4 +1,4 @@
-import { create, Payload, verify } from 'djwt';
+import { create, decode, Payload, validate, verify } from 'djwt';
 import { importJWK, importPKCS8, JWK } from 'jose';
 import getEnv from './env.ts';
 
@@ -50,6 +50,7 @@ export async function verifyToken(jwt: string) {
     console.log('[verifyToken] OK uid:', uid);
     return uid;
   } catch (err: unknown) {
+    console.info(validate(decode(jwt)));
     console.error('[verifyToken] ERROR:', err);
     return;
   }
