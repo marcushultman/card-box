@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { useEffect, useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
+import { LOGIN_TYPE } from './FinishLogin.tsx';
 
 const usePopup = false;
 
@@ -20,6 +21,9 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
 
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
+    const url = new URL('/login', location.href);
+    url.searchParams.set(LOGIN_TYPE, 'google');
+    provider.setCustomParameters({ redirect_uri: url.href });
 
     if (usePopup) {
       // todo: handle failure

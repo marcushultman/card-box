@@ -1,13 +1,18 @@
-import { tw } from 'twind';
-import { JSX } from 'preact';
 import app from '@firebase';
-import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
+import {
+  getAuth,
+  getRedirectResult,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+} from 'firebase/auth';
 import { useEffect, useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
 import { EMAIL_STORAGE_KEY } from './LoginEmail.tsx';
 import { UserIcon } from '../utils/icons/24/outline.ts';
 
-export default function LoginEmailLink() {
+export const LOGIN_TYPE = 'loginType';
+
+export default function FinishLogin({ type }: { type: string }) {
   const formRef = useRef<HTMLFormElement>(null);
   const onError = (err?: unknown) => {
     const message = err instanceof Error ? err.message : `Unexpected error: ${err}`;
@@ -29,11 +34,27 @@ export default function LoginEmailLink() {
     }
   };
 
+  const loginWithGoogle = async () => {
+    const auth = getAuth(app);
+    const result = await getRedirectResult(auth).catch(onError);
+    if (result) {
+      login(result.user.accessToken);
+    }
+  };
+
   useEffect(() => {
     const auth = getAuth(app);
-    const email = window.localStorage.getItem(EMAIL_STORAGE_KEY);
-    if (email && isSignInWithEmailLink(auth, window.location.href)) {
-      loginFromLink(email);
+    if (type === 'email') {
+      const email = window.localStorage.getItem(EMAIL_STORAGE_KEY);
+      if (!email) {
+        onError();
+      } else if (!isSignInWithEmailLink(auth, window.location.href)) {
+        onError();
+      } else {
+        loginFromLink(email);
+      }
+    } else if (type === 'google') {
+      loginWithGoogle();
     } else {
       onError();
     }

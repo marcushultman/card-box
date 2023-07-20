@@ -13,9 +13,9 @@ import { useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
 import { batch, useSignal } from '@preact/signals';
 import { updateProfile } from '../utils/loading_v2.ts';
+import { LOGIN_TYPE } from './FinishLogin.tsx';
 
 export const EMAIL_STORAGE_KEY = 'emailForSignIn';
-export const SIGN_IN_PARAM = 'signInLink';
 
 interface Props {
   error?: string;
@@ -45,7 +45,7 @@ export default function LoginEmail({ error: errorMsg }: Props) {
     error.value = undefined;
     const auth = getAuth(app);
     const url = new URL(location.href);
-    url.searchParams.set(SIGN_IN_PARAM, '1');
+    url.searchParams.set(LOGIN_TYPE, 'email');
     const actionCodeSettings = { url: url.href, handleCodeInApp: true };
     try {
       await sendSignInLinkToEmail(auth, email.value, actionCodeSettings);

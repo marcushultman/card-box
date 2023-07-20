@@ -1,5 +1,5 @@
 import { tw } from 'twind';
-import { Handlers } from '$fresh/server.ts';
+import { Handlers, PageProps } from '$fresh/server.ts';
 import { setCookie } from '@std/http/cookie.ts';
 import { createTokens } from '../../utils/key.ts';
 import db from '@firestore';
@@ -10,6 +10,7 @@ import getGoogleProfile from '../../utils/google_id.ts';
 import { loadProfile, updateProfile } from '../../utils/loading_v2.ts';
 import { EnvelopeIcon } from '../../utils/icons/24/outline.ts';
 import { Profile } from '../../utils/model_v2.ts';
+import FinishLogin, { LOGIN_TYPE } from '../../islands/FinishLogin.tsx';
 
 const redirectToLogin = (req: Request, error = 1000) =>
   Response.redirect(new URL(`/login?error=${error}`, req.url));
@@ -54,7 +55,13 @@ export const handler: Handlers = {
   },
 };
 
-export default function () {
+export default function ({ url }: PageProps) {
+  const loginType = url.searchParams.get(LOGIN_TYPE);
+  const error = url.searchParams.get('error') ?? undefined;
+
+  if (loginType && !error) {
+    return <FinishLogin type={loginType} />;
+  }
   return (
     <div class='fixed w-screen h-full flex(& col) gap-2 items-center'>
       <div class='relative w-full h-[80px]'>
@@ -78,6 +85,8 @@ export default function () {
         </a>
         <LoginGoogle />
       </div>
+
+      {error && <div class='text-red-500 mt-2'>{error}</div>}
 
       <div class='relative w-full h-[80px]'>
         <div class='absolute inset-0 -z-20 border(l([100vw] solid warmGray-600) t([16px] solid transparent))' />

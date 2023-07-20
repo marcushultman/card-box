@@ -1,15 +1,15 @@
 import { PageProps } from '$fresh/server.ts';
 import TopBar from '../../components/TopBar.tsx';
-import LoginEmail, { SIGN_IN_PARAM } from '../../islands/LoginEmail.tsx';
-import LoginEmailLink from '../../islands/LoginEmailLink.tsx';
+import LoginEmail from '../../islands/LoginEmail.tsx';
+import FinishLogin, { LOGIN_TYPE } from '../../islands/FinishLogin.tsx';
 import { ArrowLeftIcon } from '../../utils/icons/24/outline.ts';
 
 export default function ({ url }: PageProps) {
-  const isSignIn = url.searchParams.has(SIGN_IN_PARAM);
+  const loginType = url.searchParams.get(LOGIN_TYPE);
   const error = url.searchParams.get('error') ?? undefined;
 
-  if (isSignIn && !error) {
-    return <LoginEmailLink />;
+  if (loginType && !error) {
+    return <FinishLogin type={loginType} />;
   }
   return (
     <div class='flex(& col)'>

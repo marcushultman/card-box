@@ -21,9 +21,9 @@ import * as $$2 from './islands/ChatWindow.tsx';
 import * as $$3 from './islands/Counter.tsx';
 import * as $$4 from './islands/EditImage.tsx';
 import * as $$5 from './islands/EditName.tsx';
-import * as $$6 from './islands/GroupSettingsButton.tsx';
-import * as $$7 from './islands/LoginEmail.tsx';
-import * as $$8 from './islands/LoginEmailLink.tsx';
+import * as $$6 from './islands/FinishLogin.tsx';
+import * as $$7 from './islands/GroupSettingsButton.tsx';
+import * as $$8 from './islands/LoginEmail.tsx';
 import * as $$9 from './islands/LoginGoogle.tsx';
 import * as $$10 from './islands/NewGameForm.tsx';
 import * as $$11 from './islands/OfflineMode.tsx';
@@ -55,9 +55,9 @@ const manifest = {
     './islands/Counter.tsx': $$3,
     './islands/EditImage.tsx': $$4,
     './islands/EditName.tsx': $$5,
-    './islands/GroupSettingsButton.tsx': $$6,
-    './islands/LoginEmail.tsx': $$7,
-    './islands/LoginEmailLink.tsx': $$8,
+    './islands/FinishLogin.tsx': $$6,
+    './islands/GroupSettingsButton.tsx': $$7,
+    './islands/LoginEmail.tsx': $$8,
     './islands/LoginGoogle.tsx': $$9,
     './islands/NewGameForm.tsx': $$10,
     './islands/OfflineMode.tsx': $$11,
