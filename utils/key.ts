@@ -16,13 +16,20 @@ const CLAIMS: Payload = {
 const ONE_HOUR = 60 * 60;
 const ONE_YEAR = 365 * 24 * ONE_HOUR;
 
-// todo: refresh when needed
+type GoogleJWK = JWK & { kid: string };
+
+async function fetchPublicKeys(): Promise<GoogleJWK[]> {
+  if (Deno.env.has('FIREBASE_PUB_KEY_JWK')) {
+    return JSON.parse(Deno.env.get('FIREBASE_PUB_KEY_JWK')!).keys;
+  }
+  const res = await fetch('https://www.googleapis.com/service_accounts/v1/jwk/' + CLIENT_EMAIL);
+  const { keys } = await res.json();
+  // todo: cache for res.headers.get('Cache-Control max-age')
+  return keys;
+}
+
 async function fetchPublicKey() {
-  const res = await fetch(
-    'https://www.googleapis.com/service_accounts/v1/jwk/' + CLIENT_EMAIL,
-  );
-  type GoogleJWK = JWK & { kid: string };
-  const { keys }: { keys: GoogleJWK[] } = await res.json();
+  const keys = await fetchPublicKeys();
   return keys.find(({ kid }) => kid === PRIVATE_KEY_ID)!;
 }
 

@@ -9,12 +9,20 @@ const ISSUER = `https://securetoken.google.com/${PROJECT_ID}`;
 
 type GoogleJWK = JsonWebKey & { kid: string };
 
-async function fetchJwks() {
+async function fetchPublicKeys(): Promise<GoogleJWK[]> {
+  if (Deno.env.has('GOOGLE_PROFILE_PUB_KEY_JWK')) {
+    return JSON.parse(Deno.env.get('GOOGLE_PROFILE_PUB_KEY_JWK')!).keys;
+  }
   const res = await fetch(
     'https://www.googleapis.com/robot/v1/metadata/jwk/securetoken@system.gserviceaccount.com',
   );
-  // res.headers.get('Cache-Control')
-  const { keys }: { keys: GoogleJWK[] } = await res.json();
+  const { keys } = await res.json();
+  // todo: cache for res.headers.get('Cache-Control max-age')
+  return keys;
+}
+
+async function fetchJwks() {
+  const keys = await fetchPublicKeys();
   return new Map(
     await Promise.all(
       keys.map(async (jwk) =>
@@ -24,7 +32,6 @@ async function fetchJwks() {
   );
 }
 
-// todo: refresh when needed
 const jwks = await fetchJwks();
 
 export default async function getGoogleProfile(jwt: string) {
