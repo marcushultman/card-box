@@ -52,12 +52,9 @@ export async function createTokens(uid: string) {
 
 export async function verifyToken(jwt: string) {
   try {
-    console.log('[verifyToken] jwt:', jwt);
     const { uid } = await verify(jwt, verifyKey) as { uid: string };
-    console.log('[verifyToken] OK uid:', uid);
     return uid;
   } catch (err: unknown) {
-    console.info(validate(decode(jwt)));
     console.error('[verifyToken] ERROR:', err);
     return;
   }
