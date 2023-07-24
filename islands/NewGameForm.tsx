@@ -56,7 +56,7 @@ export default function NewGameForm({ userId }: { userId: string }) {
     console.log('copyInvite', e.currentTarget.value);
   };
 
-  const inviteUrl = location ? new URL('./invite?', location.href) : undefined;
+  const inviteUrl = window.location ? new URL('./invite?', location.href) : undefined;
   inviteUrl?.searchParams.set('invite', 'foo');
 
   const onShare = () => navigator.share({ url: inviteUrl?.toString() });
