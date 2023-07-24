@@ -31,6 +31,7 @@ import * as $$12 from './islands/ResetGame.tsx';
 import * as $$13 from './islands/ScoreBoard.tsx';
 import * as $$14 from './islands/Signup.tsx';
 import * as $$15 from './islands/SurfacesRow.tsx';
+import * as $$16 from './islands/settings/ErrorMessage.tsx';
 
 const manifest = {
   routes: {
@@ -65,6 +66,7 @@ const manifest = {
     './islands/ScoreBoard.tsx': $$13,
     './islands/Signup.tsx': $$14,
     './islands/SurfacesRow.tsx': $$15,
+    './islands/settings/ErrorMessage.tsx': $$16,
   },
   baseUrl: import.meta.url,
 };

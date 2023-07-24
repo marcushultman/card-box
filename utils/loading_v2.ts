@@ -9,6 +9,7 @@ import {
   collection,
   CollectionReference,
   deleteDoc,
+  deleteField,
   doc,
   documentId,
   DocumentReference,
@@ -60,6 +61,8 @@ import {
   WithId,
   WithRef,
 } from './model_v2.ts';
+
+type DeleteField = ReturnType<typeof deleteField>;
 
 // Rules
 
@@ -127,7 +130,10 @@ export function loadProfile(id: string) {
   return firstValueFrom(onProfile(id));
 }
 
-export async function updateProfile(id: string, update: Partial<Profile>) {
+export async function updateProfile(
+  id: string,
+  update: Partial<Profile | Record<keyof Profile, DeleteField>>,
+) {
   const data = typeof update.name === 'string'
     ? { ...update, _name: update.name.toLocaleLowerCase() }
     : update;

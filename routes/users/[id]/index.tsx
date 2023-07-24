@@ -8,6 +8,8 @@ import { AuthState } from '../../../utils/auth_state.ts';
 import { Profile } from '../../../utils/model_v2.ts';
 import { loadProfile } from '../../../utils/loading_v2.ts';
 import TopBar from '../../../components/TopBar.tsx';
+import { useSignal } from '@preact/signals';
+import ErrorMessage from '../../../islands/settings/ErrorMessage.tsx';
 
 interface Data extends AuthState {
   profile: Profile;
@@ -21,6 +23,8 @@ export const handler: Handlers<Data, AuthState> = {
 };
 
 export default function UserPage({ data: { profile } }: PageProps<Data>) {
+  const error = useSignal<string | null>(null);
+
   return (
     <div class='fixed w-screen h-full'>
       <TopBar title='Settings'>
@@ -35,7 +39,8 @@ export default function UserPage({ data: { profile } }: PageProps<Data>) {
           <EditName profile={profile} />
         </div>
 
-        <ChatNotificationSetting profile={profile} />
+        <ChatNotificationSetting profile={profile} error={error} />
+        <ErrorMessage error={error} />
 
         <div class='m-4 flex justify-center'>
           <a href='/logout' class='text(white lg) px-8 py-2 bg-red-500 rounded-full'>Logout</a>

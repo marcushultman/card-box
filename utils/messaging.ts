@@ -4,6 +4,7 @@ import { Signal } from '@preact/signals-core';
 import { EMPTY, Observable } from 'rxjs';
 import { Profile } from './model_v2.ts';
 import { updateProfile } from './loading_v2.ts';
+import { deleteField } from 'firebase/firestore';
 
 export function isNotificationsEnabled(profile: Profile) {
   console.log(Notification.permission, profile.fcmToken);
@@ -22,6 +23,10 @@ export async function enableNotifications(profile: Signal<Profile>) {
   await updateProfile(profile.value.id, { fcmToken });
 
   profile.value = { ...profile.value, fcmToken };
+}
+
+export async function disableNotifications(profile: Signal<Profile>) {
+  await updateProfile(profile.value.id, { fcmToken: deleteField() });
 }
 
 export interface FcmOptions {

@@ -1,10 +1,19 @@
-import { useSignal } from '@preact/signals';
+import { Signal, useSignal } from '@preact/signals';
 import { useEffect } from 'preact/hooks';
 import Switch from '../components/Switch.tsx';
-import { enableNotifications, isNotificationsEnabled } from '../utils/messaging.ts';
+import {
+  disableNotifications,
+  enableNotifications,
+  isNotificationsEnabled,
+} from '../utils/messaging.ts';
 import { Profile } from '../utils/model_v2.ts';
 
-export default function ChatNotificationSetting({ profile: profileValue }: { profile: Profile }) {
+export interface Props {
+  profile: Profile;
+  error: Signal<string | null>;
+}
+
+export default function ChatNotificationSetting({ profile: profileValue, error }: Props) {
   const profile = useSignal(profileValue);
   const checked = useSignal(false);
 
@@ -16,9 +25,13 @@ export default function ChatNotificationSetting({ profile: profileValue }: { pro
     if (!checked.value) {
       try {
         await enableNotifications(profile);
-      } catch (_: unknown) {
+        error.value = null;
+      } catch (err: unknown) {
+        error.value = err instanceof Error ? err.message : String(err);
         setTimeout(() => checked.value = false, 150);
       }
+    } else {
+      await disableNotifications(profile);
     }
     checked.value = !checked.value;
   };
