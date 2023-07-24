@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "start": "deno task sw & deno run -A --unstable --watch=static/,routes/ dev.ts",
+    "start": "deno run -A --unstable --watch=static/,routes/ dev.ts",
     "sw": "deno bundle --watch sw/index.ts static/firebase-messaging-sw.js"
   },
   "lock": false,
