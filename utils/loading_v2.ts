@@ -224,6 +224,14 @@ function onDecoratedGroupGames(group: WithId<Group>, games: WithId<Game>[]) {
   );
 }
 
+export function onGroupActions(id: string, limit = 512) {
+  return limit === 0 ? of([]) : onQuery<GroupAction>(
+    collection(db, 'groups', id, 'actions'),
+    orderBy('time'),
+    limitToLast(limit),
+  );
+}
+
 export interface LoadGroupsPolicy {
   actions?: number;
   games?: string[];
@@ -235,16 +243,8 @@ export function onDecoratedGroup(id: string, { actions, games }: LoadGroupsPolic
       onGroup(id),
       onGames(id, games),
     ]).pipe(switchMap(([group, games]) => onDecoratedGroupGames(group, games))),
-    actions ? onGroupActions(id, actions) : of([]),
+    onGroupActions(id, actions),
   ]).pipe(map(([group, actions]): DecoratedGroup => ({ ...group, actions })));
-}
-
-export function onGroupActions(id: string, limit = 512) {
-  return onQuery<GroupAction>(
-    collection(db, 'groups', id, 'actions'),
-    orderBy('time'),
-    limitToLast(limit),
-  );
 }
 
 export function onDecoratedGroupsForUser(
@@ -256,7 +256,7 @@ export function onDecoratedGroupsForUser(
       groups.map((group) =>
         combineLatest([
           onGames(group.id, games).pipe(switchMap((games) => onDecoratedGroupGames(group, games))),
-          actions ? onGroupActions(group.id, actions) : of([]),
+          onGroupActions(group.id, actions),
         ]).pipe(map(([group, actions]): DecoratedGroup => ({ ...group, actions })))
       ),
     ).pipe(defaultIfEmpty([]))
