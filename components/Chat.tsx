@@ -184,7 +184,9 @@ export default function Chat({ authUser, group, updateLastSeen }: Props) {
   );
 
   const renderAttachment = ({ itemId, itemView }: Attachment) => (
-    <Card variant={items[itemId].variants[itemView]} />
+    itemId in items
+      ? <Card variant={items[itemId].variants[itemView]} />
+      : <div>{JSON.stringify({ items, itemId })}</div>
   );
 
   const renderTransaction = (time: number, transaction: Transaction) => {

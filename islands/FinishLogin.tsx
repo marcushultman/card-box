@@ -7,10 +7,8 @@ import {
 } from 'firebase/auth';
 import { useEffect, useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
-import { EMAIL_STORAGE_KEY } from './LoginEmail.tsx';
 import { UserIcon } from '../utils/icons/24/outline.ts';
-
-export const LOGIN_TYPE = 'loginType';
+import { EMAIL_STORAGE_KEY } from '../utils/login_constants.ts';
 
 export default function FinishLogin({ type }: { type: string }) {
   const formRef = useRef<HTMLFormElement>(null);

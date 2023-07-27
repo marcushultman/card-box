@@ -1,5 +1,6 @@
 import { ComponentChild, ComponentChildren, Fragment, JSX, VNode } from 'preact';
 import { tw } from 'twind';
+import { uw } from '../utils/preact/twind.ts';
 
 export interface Props extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 'title'> {
   title: string | VNode<unknown>;
@@ -22,7 +23,7 @@ export default function TopBar({ title, children, className, ...props }: Props) 
   };
   return (
     <>
-      <div class={tw(className, 'h-10 flex items-center m-2')} {...props}>
+      <div class={tw(uw(className), 'h-10 flex items-center m-2')} {...props}>
         {[left, children ? makeTitleEl(!left, !right) : makeTitleEl(), right]}
       </div>
       {rest}

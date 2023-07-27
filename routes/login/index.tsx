@@ -10,7 +10,8 @@ import getGoogleProfile from '../../utils/google_id.ts';
 import { loadProfile, updateProfile } from '../../utils/loading_v2.ts';
 import { EnvelopeIcon } from '../../utils/icons/24/outline.ts';
 import { Profile } from '../../utils/model_v2.ts';
-import FinishLogin, { LOGIN_TYPE } from '../../islands/FinishLogin.tsx';
+import FinishLogin from '../../islands/FinishLogin.tsx';
+import { LOGIN_TYPE } from '../../utils/login_constants.ts';
 
 const redirectToLogin = (req: Request, error = 1000) =>
   Response.redirect(new URL(`/login?error=${error}`, req.url));

@@ -13,9 +13,7 @@ import { useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
 import { batch, useSignal } from '@preact/signals';
 import { updateProfile } from '../utils/loading_v2.ts';
-import { LOGIN_TYPE } from './FinishLogin.tsx';
-
-export const EMAIL_STORAGE_KEY = 'emailForSignIn';
+import { EMAIL_STORAGE_KEY, LOGIN_TYPE } from '../utils/login_constants.ts';
 
 interface Props {
   error?: string;

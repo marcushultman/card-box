@@ -1,6 +1,7 @@
 // import { DecoratedPlayer } from '../utils/game_engine.ts';
+import { JSX } from 'preact';
 import { Config, WidgetType } from '../utils/rules.ts';
-import { useSwipeable } from 'https://esm.sh/*react-swipeable@7.0.0?alias=react:preact/compat';
+import { useSwipeable } from 'https://esm.sh/*react-swipeable@7.0.1?alias=react:preact/compat';
 import { useState } from 'preact/hooks';
 import { tw } from 'twind';
 import {
@@ -32,7 +33,8 @@ function PointCounter({ gameRef, playerId, player }: Props) {
     prevPoints ? 'translate-y-full' : null,
   );
 
-  const handlers = useSwipeable({
+  // @ts-ignore: react-swipeable
+  const handlers: Partial<JSX.HTMLAttributes<HTMLDivElement>> = useSwipeable({
     onSwipedRight: () => incrementPoints(gameRef, playerId, player),
     onSwipedUp: () => incrementPoints(gameRef, playerId, player),
     onSwipedLeft: () => decrementPoints(gameRef, playerId, player),

@@ -1,18 +1,9 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
-import SurfacesRow, { RowType } from '../../../islands/SurfacesRow.tsx';
-import ChatWindow from '../../../islands/ChatWindow.tsx';
-import { ArrowLeftIcon, HomeIcon } from '../../../utils/icons/24/outline.ts';
+import { ArrowLeftIcon } from '../../../utils/icons/24/outline.ts';
 import { AuthState } from '../../../utils/auth_state.ts';
-import chatWindow, { chatVisibilityFromUrl } from '../../../signals/chat_window.ts';
-import { DecoratedGroup, GroupAction, RoundAction } from '../../../utils/model_v2.ts';
+import { DecoratedGroup, GroupAction } from '../../../utils/model_v2.ts';
 import { loadDecoratedGroup, loadGroupActions } from '../../../utils/loading_v2.ts';
-import { AuthUser } from '../../../utils/auth_user.ts';
-import { useEffect } from 'preact/hooks';
-import { tw } from 'twind';
 import moment from 'moment';
-import { PlayerWidgets } from '../../../components/PlayerWidgets.tsx';
-import { findConfig, findGameConfig } from '../../../utils/game_engine_v2.ts';
-import { useGroupState } from '../../../utils/state_v2.ts';
 import ScoreBoard from '../../../islands/ScoreBoard.tsx';
 import GroupSettingsButton from '../../../islands/GroupSettingsButton.tsx';
 import TopBar from '../../../components/TopBar.tsx';
@@ -71,7 +62,7 @@ export default function ({ data: { authUser, group, actions } }: PageProps<Data>
 
       {currentGame && [
         <ScoreBoard groupData={group} />,
-        <GroupSettingsButton class='mt-8 mb-2' groupData={group} />,
+        <GroupSettingsButton className='mt-8 mb-2' groupData={group} />,
       ]}
 
       <form method='post' class='flex justify-center'>

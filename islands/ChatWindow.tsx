@@ -47,8 +47,8 @@ function ActionButtons(
     globalSelection.value = undefined;
     const surface = surfaces[selection.surface];
     const item = surface.items.find((item) => item.id === selection.item);
-    if (item) {
-      const itemView = viewForItem(surface, item);
+    const itemView = item && viewForItem(surface, item);
+    if (itemView) {
       openChat({ attachment: { itemId: item.id, itemView } });
     }
   };
@@ -107,13 +107,12 @@ const touches = new Map<number, number>();
 
 interface Props extends AuthState {
   groupData: DecoratedGroup;
-  actions: GroupAction[];
 }
 
-export default function ChatWindow({ authUser, groupData, actions }: Props) {
+export default function ChatWindow({ authUser, groupData }: Props) {
   const [lastSeen, updateLastSeen] = useTimestamp(LAST_SEEN_KEY);
 
-  const group = useGroupState(groupData, actions);
+  const group = useGroupState(groupData);
 
   // Keep last seen up-to-date
   useEffect(() => {

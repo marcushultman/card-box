@@ -10,13 +10,12 @@ const LAST_SEEN_KEY = 'chat.v1.lastseen';
 
 interface Props extends AuthState {
   groupData: DecoratedGroup;
-  actions: GroupAction[];
 }
 
-export default function ChatView({ authUser, groupData, actions }: Props) {
+export default function ChatView({ authUser, groupData }: Props) {
   const [_, updateLastSeen] = useTimestamp(LAST_SEEN_KEY);
 
-  const group = useGroupState(groupData, actions);
+  const group = useGroupState(groupData);
 
   return (
     <div class='absolute w-screen h-full flex'>

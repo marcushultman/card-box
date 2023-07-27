@@ -1,27 +1,21 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
-import SurfacesRow, { RowType } from '../../../../../islands/SurfacesRow.tsx';
+import SurfacesRow from '../../../../../islands/SurfacesRow.tsx';
 import ChatWindow from '../../../../../islands/ChatWindow.tsx';
 import { ArrowLeftIcon } from '../../../../../utils/icons/24/outline.ts';
 import { AuthState } from '../../../../../utils/auth_state.ts';
 import chatWindow, { chatVisibilityFromUrl } from '../../../../../signals/chat_window.ts';
-import { DecoratedGroup, GroupAction } from '../../../../../utils/model_v2.ts';
-import { loadDecoratedGroup, loadGroupActions } from '../../../../../utils/loading_v2.ts';
-import { AuthUser } from '../../../../../utils/auth_user.ts';
-import { useEffect } from 'preact/hooks';
-import { tw } from 'twind';
+import { DecoratedGroup } from '../../../../../utils/model_v2.ts';
+import { loadDecoratedGroup } from '../../../../../utils/loading_v2.ts';
+import { RowType } from '../../../../../utils/row_type.ts';
 
 interface Data extends AuthState {
   group: DecoratedGroup;
-  actions: GroupAction[];
 }
 
 export const handler: Handlers<Data, AuthState> = {
   async GET(req, ctx) {
     const { id, gameId } = ctx.params;
-    const [group, actions] = await Promise.all([
-      loadDecoratedGroup(id, [gameId]),
-      loadGroupActions(id),
-    ]);
+    const group = await loadDecoratedGroup(id, { games: [gameId] });
 
     // todo: hook to setup global state
     chatWindow.visible.value = chatVisibilityFromUrl(req.url);
@@ -33,17 +27,17 @@ export const handler: Handlers<Data, AuthState> = {
       return Response.redirect(new URL(`/groups/${id}`, req.url));
     }
 
-    return ctx.render({ ...ctx.state, group, actions });
+    return ctx.render({ ...ctx.state, group });
   },
 };
 
 // =================================================================================================
 
-export default function ({ data: { authUser, group, actions } }: PageProps<Data>) {
+export default function ({ data: { authUser, group } }: PageProps<Data>) {
   const transform = 'translateZ(-100px) rotateX(25deg)';
   const boardCls = 'fixed w-screen h-full overflow(x-hidden y-scroll) flex justify-center';
   const boardStyle = { perspective: '900px', perspectiveOrigin: '50% 500px' };
-  const data = { authUser, groupData: group, actions };
+  const data = { authUser, groupData: group };
 
   return (
     <body class='overflow-hidden overscroll-x-none select-none bg-coolGray-700 text-white'>

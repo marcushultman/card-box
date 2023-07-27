@@ -1,8 +1,9 @@
 import { PageProps } from '$fresh/server.ts';
 import TopBar from '../../components/TopBar.tsx';
 import LoginEmail from '../../islands/LoginEmail.tsx';
-import FinishLogin, { LOGIN_TYPE } from '../../islands/FinishLogin.tsx';
+import FinishLogin from '../../islands/FinishLogin.tsx';
 import { ArrowLeftIcon } from '../../utils/icons/24/outline.ts';
+import { LOGIN_TYPE } from '../../utils/login_constants.ts';
 
 export default function ({ url }: PageProps) {
   const loginType = url.searchParams.get(LOGIN_TYPE);

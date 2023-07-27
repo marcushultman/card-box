@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { useEffect, useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
-import { LOGIN_TYPE } from './FinishLogin.tsx';
+import { LOGIN_TYPE } from '../utils/login_constants.ts';
 
 const usePopup = false;
 

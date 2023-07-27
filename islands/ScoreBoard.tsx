@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function ScoreBoard({ groupData }: Props) {
-  const group = useGroupState(groupData, []);
+  const group = useGroupState(groupData);
 
   const game = useComputed(() => group.games.value.at(-1));
   const config = game.value && findGameConfig(game.value);

@@ -6,19 +6,19 @@ import { getPlayersFromGroupState, GroupState } from '../utils/state_v2.ts';
 import { Profile } from '../utils/model_v2.ts';
 import TopBar from './TopBar.tsx';
 import { UserIcon } from '../utils/icons/24/solid.ts';
+import { uw } from '../utils/preact/twind.ts';
 
 interface GroupPicturesProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  class: string;
   players: Profile[];
 }
 
-export function GroupPictures({ players, class: cls, ...props }: GroupPicturesProps) {
+export function GroupPictures({ players, className, ...props }: GroupPicturesProps) {
   const upperRightCls = 'w-7 h-7 rounded-full absolute top-0.5 right-0.5';
   const lowerLeftCls = 'w-7 h-7 rounded-full absolute bottom-0.5 left-0.5';
   const iconCls = 'p-1 text-white bg-coolGray-400';
 
   return (
-    <div class={tw('relative', cls)} {...props}>
+    <div class={tw('relative', uw(className))} {...props}>
       {players.length >= 2
         ? [
           players[1].img
@@ -46,7 +46,7 @@ export default function ChatTopBar({ authUser, group, showHome, ...props }: Prop
   const players = getPlayersFromGroupState(group);
   const title = (
     <a class={tw('flex(& 1) items-center gap-4')} href={`/groups/${group.id}/settings`}>
-      <GroupPictures class='w-10 h-10' {...{ players }} />
+      <GroupPictures className='w-10 h-10' {...{ players }} />
       <div>
         {players.length === 1
           ? 'You'

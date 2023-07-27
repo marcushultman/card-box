@@ -58,13 +58,13 @@ export default function Home({ data: { profile, groups } }: PageProps<Data>) {
                           ? <img class='w-12 h-12 rounded-full' src={undefined} />
                           : <PuzzlePieceIcon className={tw`w-12 h-12 text-coolGray-600`} />}
                         <GroupPictures
-                          class='absolute w-5 h-5 bottom-0.5 right-0.5'
+                          className='absolute w-5 h-5 bottom-0.5 right-0.5'
                           players={others}
                         />
                       </div>
                     )
                     : others.length
-                    ? <GroupPictures class='w-12 h-12' players={others} />
+                    ? <GroupPictures className='w-12 h-12' players={others} />
                     : <ProfileIcon size={12} {...profile} />}
 
                   <div class='flex-1'>

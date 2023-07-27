@@ -27,6 +27,7 @@ import {
 import { currentRound, getItems, getLocalSurfaces, viewForItem } from '../utils/game_engine_v2.ts';
 import { addTransaction } from '../utils/loading_v2.ts';
 import { useGroupState } from '../utils/state_v2.ts';
+import { RowType } from '../utils/row_type.ts';
 
 type Surface = DecoratedLocalSurface;
 
@@ -45,16 +46,9 @@ function SideArrow({ visible, resetScroll, children }: SideArrowProps) {
 
 //
 
-export enum RowType {
-  TOP,
-  CENTER,
-  BOTTOM,
-}
-
 interface Props extends AuthState {
   type: RowType;
   groupData: DecoratedGroup;
-  actions: GroupAction[];
 }
 
 const ROW_PLACEMENT = {
@@ -63,8 +57,8 @@ const ROW_PLACEMENT = {
   [RowType.BOTTOM]: [Placement.FRONT, Placement.BACK],
 };
 
-export default function SurfacesRow({ type, authUser, groupData, actions }: Props) {
-  const group = useGroupState(groupData, actions);
+export default function SurfacesRow({ type, authUser, groupData }: Props) {
+  const group = useGroupState(groupData);
 
   const { game, round } = currentRound(group);
   const surfacesById = getLocalSurfaces(group, authUser.id);

@@ -126,6 +126,10 @@ const LOVE_LETTER_DECK: Deck = {
   ],
 };
 
+export const DECK_DB: Record<string, Deck> = {
+  ['loveletter']: LOVE_LETTER_DECK,
+};
+
 const LOVE_LETTER: Rules = {
   name: 'Love Letter',
   configs: [

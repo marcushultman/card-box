@@ -31,17 +31,13 @@ import {
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import {
   combineLatest,
-  delay,
+  defaultIfEmpty,
   firstValueFrom,
   map,
   Observable,
   of,
-  range,
-  retry,
   skipWhile,
   switchMap,
-  tap,
-  zip,
 } from 'rxjs';
 import toIdMap from './id_map.ts';
 import {
@@ -222,20 +218,25 @@ function onGameRounds(game: WithRef<GameRef, Game>): Observable<DecoratedGame> {
 }
 
 function onDecoratedGroupGames(group: WithId<Group>, games: WithId<Game>[]) {
-  if (!games.length) {
-    return decorateGroup(group, []);
-  }
-  const decoratedGames = games
-    .map((game) => withGameRef(group.id, game))
-    .map((game): Observable<DecoratedGame> => onGameRounds(game));
-
-  return combineLatest(decoratedGames).pipe(switchMap((games) => decorateGroup(group, games)));
+  return combineLatest(games.map((game) => onGameRounds(withGameRef(group.id, game)))).pipe(
+    defaultIfEmpty([]),
+    switchMap((games) => decorateGroup(group, games)),
+  );
 }
 
-export function onDecoratedGroup(id: string, games?: string[]) {
-  return combineLatest([onGroup(id), onGames(id, games)]).pipe(
-    switchMap(([group, games]) => onDecoratedGroupGames(group, games)),
-  );
+export interface LoadGroupsPolicy {
+  actions?: number;
+  games?: string[];
+}
+
+export function onDecoratedGroup(id: string, { actions, games }: LoadGroupsPolicy = {}) {
+  return combineLatest([
+    combineLatest([
+      onGroup(id),
+      onGames(id, games),
+    ]).pipe(switchMap(([group, games]) => onDecoratedGroupGames(group, games))),
+    actions ? onGroupActions(id, actions) : of([]),
+  ]).pipe(map(([group, actions]): DecoratedGroup => ({ ...group, actions })));
 }
 
 export function onGroupActions(id: string, limit = 512) {
@@ -246,31 +247,19 @@ export function onGroupActions(id: string, limit = 512) {
   );
 }
 
-export interface LoadGroupsPolicy {
-  games?: string[];
-  actions?: number;
-}
-
 export function onDecoratedGroupsForUser(
   userId: string,
-  { games, actions }: LoadGroupsPolicy = {},
+  { actions, games }: LoadGroupsPolicy = {},
 ) {
   return onGroupsForUser(userId).pipe(switchMap((groups) =>
-    groups.length
-      ? combineLatest(
-        groups.map((group, i) =>
-          combineLatest([
-            actions ? onGroupActions(group.id, actions) : of([]),
-            onGames(group.id, games).pipe(
-              switchMap((games) => onDecoratedGroupGames(group, games)),
-            ),
-          ]).pipe(map(([actions, group]) => ({ ...group, actions })))
-        ),
-      ).pipe() //
-      // tap((i) => {
-      //   console.log(i);
-      // }),
-      : of([])
+    combineLatest(
+      groups.map((group) =>
+        combineLatest([
+          onGames(group.id, games).pipe(switchMap((games) => onDecoratedGroupGames(group, games))),
+          actions ? onGroupActions(group.id, actions) : of([]),
+        ]).pipe(map(([group, actions]): DecoratedGroup => ({ ...group, actions })))
+      ),
+    ).pipe(defaultIfEmpty([]))
   ));
 }
 
@@ -289,8 +278,8 @@ export function onDecoratedGroupsForUser(
 //   );
 // }
 
-export function loadDecoratedGroup(id: string, games?: string[]) {
-  return firstValueFrom(onDecoratedGroup(id, games));
+export function loadDecoratedGroup(id: string, policy?: LoadGroupsPolicy) {
+  return firstValueFrom(onDecoratedGroup(id, policy));
 }
 
 export function loadDecoratedGroupsForUser(userId: string, policy?: LoadGroupsPolicy) {

@@ -8,5 +8,5 @@ export default function ErrorMessage({ error }: Props) {
   if (!error.value) {
     return null;
   }
-  return <div class='text-red-500'>Error: {error.value}</div>;
+  return <div class='my-2 text-red-500'>Error: {error.value}</div>;
 }

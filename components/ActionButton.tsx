@@ -1,5 +1,6 @@
 import { JSX } from 'preact';
 import { tw } from 'twind';
+import { uw } from '../utils/preact/twind.ts';
 
 interface Props extends JSX.HTMLAttributes<HTMLButtonElement> {
   small?: boolean;
@@ -25,7 +26,7 @@ export function ActionButton({ small, unread, tooltip, children, className, ...p
   const unreadCls = 'absolute top-0 left-0 w-5 h-5 bg-red-600 rounded-full text-sm';
 
   return (
-    <div class={tw('relative', className)}>
+    <div class={tw('relative', uw(className))}>
       {tooltip ? <Tooltip text={tooltip} /> : null}
       <button className={tw(cls)} {...props}>
         {children}

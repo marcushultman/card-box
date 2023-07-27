@@ -19,8 +19,8 @@ import {
 import * as loading from './loading_v2.ts';
 import { Rules } from './rules.ts';
 import mapValues from './map_values.ts';
-import { groupPlayerIds, onDecoratedGroup, onGroupActions, onProfiles } from './loading_v2.ts';
-import { combineLatest, map, tap } from 'rxjs';
+import { groupPlayerIds, onDecoratedGroup, onProfiles } from './loading_v2.ts';
+import { map, tap } from 'rxjs';
 import toIdMap from './id_map.ts';
 
 // state
@@ -71,10 +71,7 @@ const toGameState = (
   players: signal(mapValues(players, toPlayerState)),
 });
 
-const toGroupState = (
-  { group, games, profiles }: DecoratedGroup,
-  actions: GroupAction[],
-): GroupState => ({
+const toGroupState = ({ group, games, profiles, actions }: DecoratedGroup): GroupState => ({
   id: group.id,
   users: signal(group.users),
   games: signal(games.map(toGameState)),
@@ -218,21 +215,16 @@ function keepProfilesUpToDate(profiles: Signal<Profile>[]) {
 }
 
 function keepUpToDate(group: GroupState) {
-  console.log('keepUpToDate');
-
-  return combineLatest([onDecoratedGroup(group.id), onGroupActions(group.id)]).pipe(
-    map(([groupData, actions]) => toGroupState(groupData, actions)),
-    tap(({ users, games, profiles, actions }) =>
+  return onDecoratedGroup(group.id).pipe(map(toGroupState))
+    .subscribe(({ users, games, profiles, actions }) =>
       batch(() => {
-        console.log('keepUpToDate cb');
+        console.log('GroupState update');
         group.users.value = users.peek();
         group.games.value = games.peek();
         group.profiles.value = profiles.peek();
-        console.log('on update');
         group.actions.value = actions.peek();
       })
-    ),
-  );
+    );
 }
 
 // Hook for auto-updating state
@@ -246,11 +238,11 @@ export function useProfiles(profilesData: Profile[]) {
   return profiles;
 }
 
-export function useGroupState(groupData: DecoratedGroup, actions: GroupAction[]) {
-  const group = useMemo(() => toGroupState(groupData, actions), []);
+export function useGroupState(groupData: DecoratedGroup) {
+  const group = useMemo(() => toGroupState(groupData), []);
   useEffect(() => {
-    const s = keepUpToDate(group).subscribe();
-    return () => s.unsubscribe();
+    const sub = keepUpToDate(group);
+    return () => sub.unsubscribe();
   }, []);
   return group;
 }
