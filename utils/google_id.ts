@@ -34,7 +34,7 @@ async function fetchJwks() {
 
 const jwks = await fetchJwks();
 
-export default async function getGoogleProfile(jwt: string) {
+export default async function decodeGoogleProfile(jwt: string) {
   const [{ alg, kid }] = decode(jwt) as any;
   const jwk = jwks.get(kid);
 

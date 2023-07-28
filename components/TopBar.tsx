@@ -6,8 +6,13 @@ export interface Props extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 'title'>
   title: string | VNode<unknown>;
 }
 
-export function TopBarAction({ ...props }: JSX.HTMLAttributes<HTMLAnchorElement>) {
-  return <a class='w-10 p-2' {...props} />;
+export function TopBarAnchor({ ...props }: JSX.HTMLAttributes<HTMLAnchorElement>) {
+  return <a class='group w-10 p-2' {...props} />;
+}
+export { TopBarAnchor as TopBarAction };
+
+export function TopBarButton({ ...props }: JSX.HTMLAttributes<HTMLButtonElement>) {
+  return <button class='group w-10 p-2' {...props} />;
 }
 
 export default function TopBar({ title, children, className, ...props }: Props) {

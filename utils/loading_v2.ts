@@ -259,7 +259,7 @@ export function onDecoratedGroupsForUser(
           onGroupActions(group.id, actions),
         ]).pipe(map(([group, actions]): DecoratedGroup => ({ ...group, actions })))
       ),
-    ).pipe(defaultIfEmpty([]))
+    ).pipe(defaultIfEmpty([] as DecoratedGroup[]))
   ));
 }
 
@@ -292,6 +292,10 @@ export function loadGroupActions(id: string, limit?: number) {
 
 // Group
 
+export function makeGroupId(): string {
+  return doc(collection(db, 'groups')).id;
+}
+
 export async function createGroup(users: string[]): Promise<string> {
   const group: Group = { users };
   const ref = await addDoc(collection(db, 'groups'), group);
@@ -299,11 +303,11 @@ export async function createGroup(users: string[]): Promise<string> {
 }
 
 export async function addGroupUser(groupId: string, userIds: string[]) {
-  await updateDoc(doc(db, 'groups', groupId), 'users', arrayUnion(...userIds));
+  await setDoc(doc(db, 'groups', groupId), { users: arrayUnion(...userIds) }, { merge: true });
 }
 
 export async function removeGroupUser(groupId: string, userId: string[]) {
-  await updateDoc(doc(db, 'groups', groupId), 'users', arrayRemove(...userId));
+  await setDoc(doc(db, 'groups', groupId), { users: arrayRemove(...userId) }, { merge: true });
 }
 
 function addGroupAction(groupId: string, props: Partial<GroupAction>) {

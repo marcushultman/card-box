@@ -6,7 +6,7 @@ import db from '@firestore';
 import { doc, DocumentSnapshot, getDoc } from 'firebase/firestore';
 import LoginEmail from '../../islands/LoginEmail.tsx';
 import LoginGoogle from '../../islands/LoginGoogle.tsx';
-import getGoogleProfile from '../../utils/google_id.ts';
+import decodeGoogleProfile from '../../utils/google_id.ts';
 import { loadProfile, updateProfile } from '../../utils/loading_v2.ts';
 import { EnvelopeIcon } from '../../utils/icons/24/outline.ts';
 import { Profile } from '../../utils/model_v2.ts';
@@ -16,34 +16,27 @@ import { LOGIN_TYPE } from '../../utils/login_constants.ts';
 const redirectToLogin = (req: Request, error = 1000) =>
   Response.redirect(new URL(`/login?error=${error}`, req.url));
 
+async function parseLoginRequest(data: FormData) {
+  const token = data.get('token');
+  return token ? await decodeGoogleProfile(String(token)) : null;
+}
+
 async function updateProfileData(profile: Profile) {
   const exisingProfile = await loadProfile(profile.id);
   await updateProfile(profile.id, { ...profile, ...exisingProfile });
 }
 
-async function findUserId(data: FormData) {
-  const token = data.get('token') as string | null;
-
-  if (token) {
-    const profile = await getGoogleProfile(token);
-    if (profile) {
-      await updateProfileData(profile);
-      return profile.id;
-    }
-  }
-  return new Error();
-}
-
 export const handler: Handlers = {
   async POST(req, _) {
     const data = await req.formData();
-    const uid = await findUserId(data);
+    const profile = await parseLoginRequest(data);
 
-    if (uid instanceof Error) {
+    if (!profile) {
       return redirectToLogin(req, 400);
     }
+    await updateProfileData(profile);
 
-    const { gjwt, gjwtexp, jwt, jwtexp } = await createTokens(uid);
+    const { gjwt, gjwtexp, jwt, jwtexp } = await createTokens(profile.id);
 
     const res = Response.redirect(new URL('/', req.url));
     const headers = new Headers(res.headers);

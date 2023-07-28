@@ -1,5 +1,5 @@
 import { Handlers, PageProps } from '$fresh/server.ts';
-import { loadDecoratedGroupsForUser, loadProfile } from '../utils/loading_v2.ts';
+import { addGroupUser, loadDecoratedGroupsForUser, loadProfile } from '../utils/loading_v2.ts';
 import { PlusIcon, UserPlusIcon } from '../utils/icons/24/outline.ts';
 import { ProfileIcon, ProfileLink } from '../components/Profile.tsx';
 import { AuthState } from '../utils/auth_state.ts';
@@ -14,9 +14,20 @@ interface Data extends AuthState {
   groups: DecoratedGroup[];
 }
 
+interface Invite {
+  groupId: string;
+  userId: string;
+}
+
 export const handler: Handlers<Data, AuthState> = {
-  async GET(_, ctx) {
+  async GET(req, ctx) {
     const id = ctx.state.authUser.id;
+
+    const inviteData = new URL(req.url).searchParams.get('invite');
+    if (inviteData) {
+      const { groupId, userId }: Invite = JSON.parse(atob(inviteData));
+      await addGroupUser(groupId, [userId, id]);
+    }
 
     const [profile, groups] = await Promise.all([
       loadProfile(id),

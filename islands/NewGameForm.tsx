@@ -6,12 +6,12 @@ import {
 } from '../utils/icons/24/outline.ts';
 import { tw } from 'twind';
 import { JSX, RefObject } from 'preact';
-import { createGroup, searchProfileOp } from '../utils/loading_v2.ts';
+import { createGroup, makeGroupId, searchProfileOp } from '../utils/loading_v2.ts';
 import { EMPTY, fromEvent, map, of, switchMap } from 'rxjs';
 import { useEffect, useRef } from 'preact/hooks';
 import { Signal, signal, useComputed, useSignal } from '@preact/signals';
 import { Profile } from '../utils/model_v2.ts';
-import TopBar, { TopBarAction } from '../components/TopBar.tsx';
+import TopBar, { TopBarAction, TopBarAnchor, TopBarButton } from '../components/TopBar.tsx';
 import { __asyncDelegator } from 'https://esm.sh/v124/tslib@2.5.0/deno/tslib.mjs';
 import { UserCircleIcon, UserIcon } from '../utils/icons/24/solid.ts';
 
@@ -51,15 +51,18 @@ export default function NewGameForm({ userId }: { userId: string }) {
 
   const userRowCls = 'flex items-center gap-2 py-1 px-2 focus:outline-none';
 
-  const copyInvite = (e: JSX.TargetedMouseEvent<HTMLInputElement>) => {
-    e.currentTarget.select();
-    console.log('copyInvite', e.currentTarget.value);
+  const copyInvite = (url: string) => navigator.clipboard.writeText(url);
+  const shareInvite = (url: string) => navigator.share({ url });
+
+  const shareOrCopy = () => {
+    const url = new URL('/', location.href);
+    url.searchParams.set('invite', btoa(JSON.stringify({ groupId: makeGroupId(), userId })));
+    navigator.canShare?.() ? shareInvite(url.toString()) : copyInvite(url.toString());
   };
 
-  const inviteUrl = window.location ? new URL('./invite?', location.href) : undefined;
-  inviteUrl?.searchParams.set('invite', 'foo');
-
-  const onShare = () => navigator.share({ url: inviteUrl?.toString() });
+  const topbarAction = selectedUsers.value.length
+    ? { icon: () => <PaperAirplaneIcon />, action: () => onCreateGroup() }
+    : { icon: () => <ShareIcon />, action: () => shareOrCopy() };
 
   return (
     <div class='fixed w-screen h-full'>
@@ -67,32 +70,19 @@ export default function NewGameForm({ userId }: { userId: string }) {
         <TopBarAction href='javascript:history.back()'>
           <ArrowLeftIcon />
         </TopBarAction>
-        <TopBarAction onClick={onCreateGroup}>
-          <PaperAirplaneIcon />
-        </TopBarAction>
+        <TopBarButton onClick={topbarAction.action}>
+          {topbarAction.icon()}
+        </TopBarButton>
 
         <div class='p-2 flex items-center gap-2'>
           <div class='text-gray-500'>To:</div>
           <input
             class='flex-1 border rounded-full outline-none px-2 py-1'
-            placeholder='Type name or email...'
+            placeholder='Type name or email'
             ref={inputRef}
           />
         </div>
       </TopBar>
-
-      <div class='flex items-center m-2'>
-        <input
-          class='flex-1 border rounded-lg p-1 outline-none'
-          value={inviteUrl?.toString()}
-          onClick={copyInvite}
-        />
-        {navigator.canShare?.() || 1 && (
-              <button class='p-2 w-10 h-10' onClick={onShare}>
-                <ShareIcon className='' />
-              </button>
-            )}
-      </div>
 
       <div class='flex(& col)'>
         {Object.values(searchResult.value).map(({ id, name, img, selected }) => (

@@ -30,6 +30,11 @@ export async function handler(req: Request, ctx: MiddlewareHandlerContext<AuthSt
     if (PUBLIC_RE.some((re) => re.test(requestUrl.pathname))) {
       return ctx.next();
     }
+    // search is lost
+    console.log({
+      from: requestUrl,
+      to: new URL('/login', requestUrl),
+    });
     return Response.redirect(new URL('/login', requestUrl));
   } else if (UNAUTH_RE.some((re) => re.test(requestUrl.pathname))) {
     return Response.redirect(new URL('/', requestUrl));
