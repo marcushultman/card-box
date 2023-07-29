@@ -2,6 +2,7 @@ import { MiddlewareHandlerContext } from '$fresh/server.ts';
 import { deleteCookie, getCookies } from '@std/http/cookie.ts';
 import { AuthState } from '../utils/auth_state.ts';
 import { verifyToken } from '../utils/key.ts';
+import { urlWithPath } from '../utils/url.ts';
 
 const AUTH_PREFIX = '/__/auth/';
 
@@ -30,20 +31,15 @@ export async function handler(req: Request, ctx: MiddlewareHandlerContext<AuthSt
     if (PUBLIC_RE.some((re) => re.test(requestUrl.pathname))) {
       return ctx.next();
     }
-    // search is lost
-    console.log({
-      from: requestUrl,
-      to: new URL('/login', requestUrl),
-    });
-    return Response.redirect(new URL('/login', requestUrl));
+    return Response.redirect(urlWithPath(requestUrl, '/login'));
   } else if (UNAUTH_RE.some((re) => re.test(requestUrl.pathname))) {
-    return Response.redirect(new URL('/', requestUrl));
+    return Response.redirect(urlWithPath(requestUrl, '/'));
   }
 
   const uid = await verifyToken(jwt);
 
   if (!uid) {
-    const res = Response.redirect(new URL('/login', requestUrl));
+    const res = Response.redirect(urlWithPath(requestUrl, '/login'));
     const headers = new Headers(res.headers);
     deleteCookie(headers, 'jwt');
     const { body, status, statusText } = res;

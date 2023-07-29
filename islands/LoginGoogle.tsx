@@ -1,17 +1,23 @@
 import { JSX } from 'preact';
 import app from '@firebase';
-import {
-  getAuth,
-  getRedirectResult,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-} from 'firebase/auth';
-import { useEffect, useRef } from 'preact/hooks';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
+import { useRef } from 'preact/hooks';
 import { assert } from '@std/testing/asserts.ts';
 import { LOGIN_TYPE } from '../utils/login_constants.ts';
 
-const usePopup = false;
+const usePopup = true;
+
+function searchParamValues() {
+  if (!window.location) {
+    return null;
+  }
+  const { searchParams } = new URL(window.location.href);
+  const inputs = [];
+  for (const [key, value] of searchParams.entries()) {
+    inputs.push(<input name={key} value={value} />);
+  }
+  return inputs;
+}
 
 export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -24,7 +30,7 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
 
     const url = new URL(location.href);
     url.searchParams.set(LOGIN_TYPE, 'redirect');
-    window.history.replaceState(null, '', url.href);
+    window.history.replaceState(null, '', url);
 
     if (usePopup) {
       // todo: handle failure
@@ -42,7 +48,8 @@ export default function LoginGoogle(props: JSX.HTMLAttributes<HTMLDivElement>) {
 
   return (
     <div {...props}>
-      <form class='hidden' method='post' ref={formRef}>
+      <form class='hidden' method='post' action='/login' ref={formRef}>
+        {searchParamValues()}
         <input name='token' />
       </form>
 

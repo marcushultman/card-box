@@ -12,9 +12,10 @@ import { EnvelopeIcon } from '../../utils/icons/24/outline.ts';
 import { Profile } from '../../utils/model_v2.ts';
 import FinishLogin from '../../islands/FinishLogin.tsx';
 import { LOGIN_TYPE } from '../../utils/login_constants.ts';
+import { urlWithPath } from '../../utils/url.ts';
 
-const redirectToLogin = (req: Request, error = 1000) =>
-  Response.redirect(new URL(`/login?error=${error}`, req.url));
+const redirectToLoginWithError = (req: Request, error = 1000) =>
+  Response.redirect(urlWithPath(req.url, '/login', { error: String(error) }));
 
 async function parseLoginRequest(data: FormData) {
   const token = data.get('token');
@@ -26,21 +27,31 @@ async function updateProfileData(profile: Profile) {
   await updateProfile(profile.id, { ...profile, ...exisingProfile });
 }
 
+function searchParamsFromFormData(data: FormData) {
+  const params = new URLSearchParams();
+  for (const [name, value] of data.entries()) {
+    if (typeof value === 'string') {
+      params.append(name, value);
+    }
+  }
+  return params;
+}
+
 export const handler: Handlers = {
   async POST(req, _) {
     const data = await req.formData();
     const profile = await parseLoginRequest(data);
 
     if (!profile) {
-      return redirectToLogin(req, 400);
+      return redirectToLoginWithError(req, 400);
     }
     await updateProfileData(profile);
 
-    const { gjwt, gjwtexp, jwt, jwtexp } = await createTokens(profile.id);
-
-    const res = Response.redirect(new URL('/', req.url));
+    data.delete('token');
+    const res = Response.redirect(urlWithPath(req.url, '/', searchParamsFromFormData(data)));
     const headers = new Headers(res.headers);
 
+    const { gjwt, gjwtexp, jwt, jwtexp } = await createTokens(profile.id);
     setCookie(headers, { name: 'gjwt', value: gjwt, expires: gjwtexp });
     setCookie(headers, { name: 'jwt', value: jwt, expires: jwtexp });
 
