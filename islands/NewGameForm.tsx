@@ -51,13 +51,11 @@ export default function NewGameForm({ userId }: { userId: string }) {
 
   const userRowCls = 'flex items-center gap-2 py-1 px-2 focus:outline-none';
 
-  const copyInvite = (url: string) => navigator.clipboard.writeText(url);
-  const shareInvite = (url: string) => navigator.share({ url });
-
   const shareOrCopy = () => {
     const url = new URL('/', location.href);
     url.searchParams.set('invite', btoa(JSON.stringify({ groupId: makeGroupId(), userId })));
-    navigator.canShare?.() ? shareInvite(url.toString()) : copyInvite(url.toString());
+    const share = { url: url.toString() };
+    navigator.canShare?.(share) ? navigator.share(share) : navigator.clipboard.writeText(share.url);
   };
 
   const topbarAction = selectedUsers.value.length
